@@ -1,0 +1,9 @@
+{
+  "name": "Golden Acceso",
+  "description": "Plataforma de gestión patrimonial",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
