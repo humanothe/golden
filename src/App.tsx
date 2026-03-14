@@ -18,7 +18,6 @@ import { MembershipSelection } from './pages/MembershipSelection';
 import { PartnerProfile } from './pages/PartnerProfile';
 import { Partners } from './pages/Partners';
 import { HistoryPage } from './pages/History';
-import { WaitingScreen } from './pages/ApplicationStatus';
 import { RoleApplication } from './pages/RoleApplication';
 import { WaitingApprovalScreen } from './pages/WaitingApprovalScreen';
 import { BenefitsView } from './pages/BenefitsView';
@@ -82,7 +81,7 @@ function GlobalTransactionMonitor({ children }: { children?: React.ReactNode }) 
   
   const shouldBlock = activeScan && 
                      activeScan.status === 'pendiente' && 
-                     !activeScan.nueva_consulta && 
+                     activeScan.nueva_consulta === true && 
                      !isBenefitsPage &&
                      !isWaitingPage;
 
@@ -136,14 +135,8 @@ function AppRoutes() {
 
       <Route path="/role-application" element={
         !isAuthenticated ? <Navigate to="/login" replace /> :
-        businessStatus === 'pending' ? <Navigate to="/espera" replace /> :
+        businessStatus === 'pending' ? <Navigate to="/waiting-approval" replace /> :
         businessStatus === 'approved' ? <Navigate to="/profile" replace /> : <RoleApplication />
-      } />
-      
-      <Route path="/espera" element={
-        !isAuthenticated ? <Navigate to="/login" replace /> : 
-        businessStatus === 'approved' ? <Navigate to="/profile" replace /> : 
-        businessStatus === 'pending' ? <WaitingScreen /> : <Navigate to="/dashboard" replace />
       } />
       
       <Route path="*" element={<Navigate to="/" replace />} />
