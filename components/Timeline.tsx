@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, Package, Truck, User } from 'lucide-react';
 
-type TimelineStatus = 'pendiente' | 'preparando' | 'en_camino' | 'entregado' | 'cancelado' | 'pending' | 'processing' | 'ready' | 'picked_up' | 'delivered' | 'cancelled';
+type TimelineStatus = 'pendiente' | 'preparando' | 'en_camino' | 'entregado' | 'cancelado';
 
 interface TimelineEvent {
   status: TimelineStatus;
@@ -26,15 +26,15 @@ const Timeline: React.FC<TimelineProps> = ({ status, repartidor }) => {
       status: 'pendiente',
       title: 'Solicitud Recibida',
       description: 'Hemos recibido tu pedido y lo estamos procesando.',
-      isCurrent: status === 'pendiente' || status === 'pending',
-      isCompleted: status !== 'pendiente' && status !== 'pending',
+      isCurrent: status === 'pendiente',
+      isCompleted: status !== 'pendiente',
     },
     {
       status: 'preparando',
       title: 'Empacando tus productos',
       description: 'Estamos preparando tu orden para el envío.',
-      isCurrent: status === 'preparando' || status === 'processing' || status === 'ready',
-      isCompleted: ['en_camino', 'entregado', 'picked_up', 'delivered'].includes(status),
+      isCurrent: status === 'preparando',
+      isCompleted: ['en_camino', 'entregado'].includes(status),
     },
     {
       status: 'en_camino',
@@ -42,32 +42,27 @@ const Timeline: React.FC<TimelineProps> = ({ status, repartidor }) => {
       description: repartidor 
         ? `El repartidor ${repartidor.nombre} va hacia ti. Contacto: ${repartidor.telefono || 'N/A'}`
         : 'Tu pedido está en camino.',
-      isCurrent: status === 'en_camino' || status === 'picked_up',
-      isCompleted: status === 'entregado' || status === 'delivered',
+      isCurrent: status === 'en_camino',
+      isCompleted: status === 'entregado',
     },
     {
       status: 'entregado',
       title: 'Entregado',
       description: 'Tu pedido ha sido entregado. ¡Gracias por tu compra!',
-      isCurrent: status === 'entregado' || status === 'delivered',
-      isCompleted: status === 'entregado' || status === 'delivered',
+      isCurrent: status === 'entregado',
+      isCompleted: status === 'entregado',
     },
   ];
 
   const getIcon = (eventStatus: TimelineStatus) => {
     switch (eventStatus) {
       case 'pendiente':
-      case 'pending':
         return <Check size={16} />;
       case 'preparando':
-      case 'processing':
-      case 'ready':
         return <Package size={16} />;
       case 'en_camino':
-      case 'picked_up':
         return <Truck size={16} />;
       case 'entregado':
-      case 'delivered':
         return <User size={16} />;
       default:
         return <Check size={16} />;

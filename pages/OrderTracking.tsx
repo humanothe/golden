@@ -19,7 +19,7 @@ export const OrderTracking: React.FC = () => {
     setLoading(true);
 
     const { data: request, error: requestError } = await supabase
-      .from('entregas_maestras')
+      .from('pedidos_maestros')
       .select('*, solicitudes_entrega(producto_id)')
       .eq('socio_id', user.id)
       .in('estado_maestro', ['pendiente', 'en_camino'])
@@ -77,10 +77,10 @@ export const OrderTracking: React.FC = () => {
       fetchStatus();
 
       const channel = supabase
-        .channel(`entregas_maestras:${user.id}`)
+        .channel(`pedidos_maestros:${user.id}`)
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'entregas_maestras', filter: `socio_id=eq.${user.id}` },
+          { event: '*', schema: 'public', table: 'pedidos_maestros', filter: `socio_id=eq.${user.id}` },
           (payload) => {
             console.log('Change received!', payload);
             fetchStatus();

@@ -113,8 +113,6 @@ export const Wallet: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      if (!user?.id) throw new Error("USUARIO_NO_AUTENTICADO");
-      
       const { error: rpcError } = await supabase.rpc('procesar_canje_tarjeta', {
           p_tarjeta_id: cardData.id,
           p_socio_id: user.id
@@ -202,9 +200,7 @@ export const Wallet: React.FC = () => {
     if (user?.id && user.id !== 'guest') {
       api.data.getLastRecharges(user.id).then(setRecentRecharges);
     }
-    return () => {
-      stopMedia();
-    };
+    return () => stopMedia();
   }, [user, stopMedia]);
 
   return (
