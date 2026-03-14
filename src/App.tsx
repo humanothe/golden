@@ -6,9 +6,11 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { CartProvider } from './contexts/CartContext';
 import { UIProvider, useUI } from './contexts/UIContext'; 
 import { Layout } from './components/Layout';
+import { Welcome } from './pages/Welcome';
 import { AuthPage } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { Market } from './pages/Market';
+import { Wallet } from './pages/Wallet';
 import { Profile } from './pages/Profile';
 import { BusinessAdmin } from './pages/BusinessAdmin';
 import { Onboarding } from './pages/Onboarding'; 
@@ -18,7 +20,9 @@ import { Partners } from './pages/Partners';
 import { HistoryPage } from './pages/History';
 import { WaitingScreen } from './pages/ApplicationStatus';
 import { RoleApplication } from './pages/RoleApplication';
+import { WaitingApprovalScreen } from './pages/WaitingApprovalScreen';
 import { BenefitsView } from './pages/BenefitsView';
+import { Portfolio } from './pages/Portfolio';
 import { Loader2 } from 'lucide-react';
 import { supabase } from './services/supabaseClient';
 
@@ -74,14 +78,16 @@ function GlobalTransactionMonitor({ children }: { children?: React.ReactNode }) 
   }, [user?.id, setActiveScan, loading, connectionError]);
 
   const isBenefitsPage = location.pathname.includes('/benefits');
+  const isWaitingPage = location.pathname.includes('/waiting-approval');
   
   const shouldBlock = activeScan && 
                      activeScan.status === 'pendiente' && 
                      !activeScan.nueva_consulta && 
-                     !isBenefitsPage;
+                     !isBenefitsPage &&
+                     !isWaitingPage;
 
   if (shouldBlock) {
-    return <Navigate to="/espera" replace />;
+    return <Navigate to="/waiting-approval" replace />;
   }
 
   return <>{children}</>;
@@ -106,7 +112,7 @@ function AppRoutes() {
       <Route path="/" element={
         isAuthenticated 
           ? (needsOnboarding ? <Navigate to="/onboarding" replace /> : <Navigate to="/dashboard" replace />)
-          : <Navigate to="/login" replace />
+          : <Welcome />
       } />
       
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <AuthPage mode="login" />} />
@@ -118,11 +124,14 @@ function AppRoutes() {
       <Route path="/profile" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><Profile /></Layout>} />
       <Route path="/business-admin" element={!isAuthenticated ? <Navigate to="/login" replace /> : <BusinessAdmin />} />
       <Route path="/market" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><Market /></Layout>} />
+      <Route path="/wallet" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><Wallet /></Layout>} />
+      <Route path="/portfolio" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><Portfolio /></Layout>} />
       <Route path="/partners" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><Partners /></Layout>} />
       <Route path="/history" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><HistoryPage /></Layout>} />
       <Route path="/partner/:partnerId" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><PartnerProfile /></Layout>} />
       <Route path="/plans" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><MembershipSelection /></Layout>} />
       
+      <Route path="/waiting-approval" element={!isAuthenticated ? <Navigate to="/login" replace /> : <WaitingApprovalScreen />} />
       <Route path="/benefits/:scanId" element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout><BenefitsView /></Layout>} />
 
       <Route path="/role-application" element={
