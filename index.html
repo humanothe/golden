@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -52,22 +52,19 @@
               fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
             }
           }
-        },
-        plugins: [
-          function({ addVariant }) {
-            addVariant('light', '.light &')
-          }
-        ]
+        }
       }
     </script>
 
     <style type="text/css">
+      :root { color-scheme: dark; }
       body { 
+        background-color: #050505; 
         margin: 0; 
         -webkit-tap-highlight-color: transparent;
         overscroll-behavior-y: contain;
         user-select: none;
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Cinzel', serif;
       }
       .vignette-overlay { background: radial-gradient(circle, transparent 20%, #050505 150%); }
       .text-gold-metallic {
@@ -91,7 +88,7 @@
       }
     </style>
 
-  <link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/src/index.css">
 </head>
   <body>
     <div id="root"></div>
