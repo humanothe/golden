@@ -1,12 +1,11 @@
 {
   "name": "Golden Acceso",
   "version": "1.0.0",
-  "type": "module",
   "description": "Plataforma de gestión patrimonial",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },

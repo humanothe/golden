@@ -5,7 +5,7 @@ import {
   Snowflake, Clock, Search, Loader2, Package,
   Calendar, ShieldCheck, Banknote, ArrowRight, AlertCircle,
   ChevronRight, Info, Truck, X, Hash, MapPin, User as UserIcon, Settings, MessageSquare, MessageCircle,
-  CheckCircle2, History, Inbox, ShoppingBag, Map, Phone, Home, Building, Lock, Star
+  CheckCircle2, History, Inbox, ShoppingBag, Map as MapIcon, Phone, Home, Building, Lock, Star, Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -89,34 +89,206 @@ const RatingModal = ({
   );
 };
 
-const FloatingDeliveryBar = ({ request, onClick }: { request: any, onClick: () => void }) => {
+const DeliveryStories = ({ requests, onStoryClick }: { requests: any[], onStoryClick: (req: any) => void }) => {
+  if (requests.length === 0) return null;
+
   return (
-    <motion.div 
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 100, opacity: 0 }}
-      onClick={onClick}
-      className="fixed bottom-24 left-6 right-6 z-[60] bg-[#0A0A0A]/90 backdrop-blur-2xl text-white p-5 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-gold-400/20 flex items-center justify-between cursor-pointer group transition-all hover:border-gold-400/40"
-    >
-      <div className="flex items-center gap-5">
-        <div className="w-14 h-14 bg-gold-400/10 border border-gold-400/20 rounded-2xl flex items-center justify-center text-gold-400 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gold-400/5 animate-pulse"></div>
-          <Truck size={24} className="relative z-10" />
-        </div>
-        <div>
-          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gold-400 opacity-80 mb-1">LOGÍSTICA_EN_MOVIMIENTO</p>
-          <p className="text-[11px] font-black uppercase tracking-tight text-white/90">
-            PEDIDO EN CAMINO <span className="text-gold-400/60 mx-1">|</span> {request.nombre_repartidor || 'REPARTIDOR'}
-          </p>
-        </div>
+    <div className="w-full space-y-5 mb-12 px-8 relative z-20">
+      <p className="text-[8px] text-gold-400 font-black uppercase tracking-[0.6em] opacity-60 ml-1">ASIGNADOS</p>
+      <div className="flex gap-8 overflow-x-auto pb-6 scrollbar-hide -mx-4 px-4">
+        {requests.map((req, idx) => (
+          <motion.div
+            key={req.id_pedido_maestro || idx}
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            whileHover={{ y: -5 }}
+            onClick={() => onStoryClick(req)}
+            className="flex flex-col items-center gap-4 shrink-0 cursor-pointer group"
+          >
+            <div className="relative">
+              {/* Intense Floating Glow */}
+              <div className="absolute inset-[-8px] rounded-full bg-blue-500/30 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+              <div className="absolute inset-[-2px] rounded-full bg-blue-400/20 blur-md transition-all duration-500"></div>
+              
+              <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-blue-600 via-blue-400 to-white/60 relative z-10 group-hover:from-gold-400 group-hover:to-white transition-all duration-700 shadow-[0_15px_35px_rgba(0,0,0,0.5)]">
+                <div className="w-full h-full rounded-full border-[4px] border-black overflow-hidden bg-black flex items-center justify-center aspect-square">
+                  {req.foto_repartidor ? (
+                    <img src={req.foto_repartidor} alt={req.nombre_repartidor} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                  ) : (
+                    <UserIcon size={36} className="text-white/10" />
+                  )}
+                </div>
+              </div>
+              
+              {/* Floating Status Indicator */}
+              <div className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full border-[3px] border-black flex items-center justify-center shadow-2xl z-20 group-hover:bg-gold-400 group-hover:scale-110 transition-all duration-500">
+                <Truck size={14} className="text-white group-hover:text-black" />
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-center space-y-1">
+              <span className="text-[9px] font-black text-white uppercase tracking-[0.15em] group-hover:text-gold-400 transition-colors truncate max-w-[90px]">
+                {req.nombre_repartidor?.split(' ')[0] || 'OPERADOR'}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse"></div>
+                <span className="text-[6px] font-black text-blue-400/80 uppercase tracking-[0.2em]">EN RUTA</span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
-      <div className="flex items-center gap-4">
-        <div className="h-10 w-[1px] bg-white/5"></div>
-        <button className="h-12 px-6 bg-gold-400 text-black text-[9px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all shadow-lg active:scale-95">
-          DETALLES
-        </button>
-      </div>
-    </motion.div>
+    </div>
+  );
+};
+
+const DeliverySidebar = ({ 
+  request, 
+  isOpen, 
+  onClose,
+  onRefresh,
+  onReceiveOrder,
+  pinRevealed
+}: { 
+  request: any, 
+  isOpen: boolean, 
+  onClose: () => void,
+  onRefresh: () => void,
+  onReceiveOrder: () => void,
+  pinRevealed: boolean
+}) => {
+  if (!request) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
+          />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-[#050505] border-l border-white/10 z-[210] shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col"
+          >
+            <div className="p-8 flex-1 overflow-y-auto no-scrollbar space-y-10">
+              <div className="flex justify-between items-center">
+                <p className="text-[8px] text-gold-400 font-black uppercase tracking-[0.5em]">DETALLES_ENTREGA</p>
+                <button onClick={onClose} className="text-white/20 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+                    {request.foto_repartidor ? (
+                      <img src={request.foto_repartidor} alt={request.nombre_repartidor} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/10">
+                        <UserIcon size={40} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
+                      {request.nombre_repartidor || 'REPARTIDOR'}
+                    </h3>
+                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">OPERADOR_EN_RUTA</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <a 
+                    href={`tel:${request.telefono_repartidor}`}
+                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
+                  >
+                    <Phone size={20} className="text-white/40 group-hover:text-blue-400 transition-colors" />
+                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">LLAMAR</span>
+                  </a>
+                  <a 
+                    href={`https://wa.me/${request.telefono_repartidor?.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
+                  >
+                    <MessageCircle size={20} className="text-white/40 group-hover:text-[#25D366] transition-colors" />
+                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">WHATSAPP</span>
+                  </a>
+                  <button 
+                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
+                  >
+                    <MessageSquare size={20} className="text-white/40 group-hover:text-gold-400 transition-colors" />
+                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">CHAT</span>
+                  </button>
+                </div>
+
+                <div className="p-8 bg-blue-600/10 border border-blue-500/20 rounded-3xl space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-1">
+                      <p className="text-[8px] text-blue-400 font-black uppercase tracking-widest">ESTADO_ACTUAL</p>
+                      <p className="text-lg font-black text-white uppercase tracking-tight">EN CAMINO</p>
+                    </div>
+                    <Truck className="text-blue-400 animate-pulse" size={24} />
+                  </div>
+                  
+                  {request.token_entrega && (
+                    <div className="pt-6 border-t border-white/10 space-y-4">
+                      <p className="text-[8px] text-white/40 font-black uppercase tracking-widest">TOKEN_DE_ENTREGA</p>
+                      {pinRevealed ? (
+                        <p className="text-5xl font-mono font-black text-white tracking-[0.2em]">{request.token_entrega}</p>
+                      ) : (
+                        <div className="space-y-4">
+                          <p className="text-3xl font-mono font-black text-white/20 tracking-[0.2em] blur-[4px]">••••••</p>
+                          <button 
+                            onClick={onReceiveOrder}
+                            className="w-full py-4 bg-gold-400 text-black font-black text-[10px] uppercase tracking-[0.4em] rounded-xl hover:bg-white transition-all active:scale-95"
+                          >
+                            RECIBIR_Y_REVELAR_PIN
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                   <p className="text-[8px] text-white/20 font-black uppercase tracking-widest">DETALLES_DEL_PEDIDO</p>
+                   <div className="space-y-3">
+                     {request.productos_ids?.map((p: any, idx: number) => (
+                       <div key={idx} className="flex items-center gap-4 p-4 bg-white/[0.01] border border-white/5 rounded-xl">
+                         <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                           {p.url_imagen ? <img src={p.url_imagen} className="w-full h-full object-cover" /> : <Package size={16} />}
+                         </div>
+                         <div className="flex-1">
+                           <p className="text-[10px] font-black text-white uppercase truncate">{p.nombre_producto}</p>
+                           <p className="text-[8px] text-white/30 uppercase">{p.cantidad} UNIDADES</p>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-8 border-t border-white/10">
+              <button 
+                onClick={onClose}
+                className="w-full py-5 bg-white text-black font-black text-[10px] uppercase tracking-[0.4em] hover:bg-gold-400 transition-all active:scale-95"
+              >
+                CERRAR_PANEL
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -161,8 +333,8 @@ const SemaforoStatus = ({
     preparando: { color: 'bg-gold-400', textColor: 'text-gold-900', icon: <Package />, title: 'APROBADO' },
     listo: { color: 'bg-yellow-500', textColor: 'text-yellow-900', icon: <CheckCircle2 />, title: 'LISTO' },
     en_camino: { 
-      color: 'bg-gold-400', 
-      textColor: 'text-black', 
+      color: 'bg-blue-600', 
+      textColor: 'text-blue-100', 
       icon: (
         <motion.div
           animate={{ x: [0, 5, 0], y: [0, -2, 0] }}
@@ -182,19 +354,19 @@ const SemaforoStatus = ({
   const whatsappLink = `https://wa.me/${request.telefono_repartidor?.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, soy tu socio de Golden Acceso, te escribo por mi pedido...')}`;
 
   return (
-    <div className="max-w-[1400px] mx-auto mt-6 p-6 md:p-10 bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden rounded-[3rem] group">
+    <div className="max-w-[1400px] mx-auto mt-8 p-8 md:p-12 bg-white/[0.02] border border-white/5 backdrop-blur-3xl relative overflow-hidden group">
       {/* Background Glow for Status */}
-      <div className={`absolute -right-10 -top-10 w-64 h-64 rounded-full opacity-[0.03] blur-[80px] transition-all duration-1000 ${current.color}`}></div>
+      <div className={`absolute -right-20 -top-20 w-80 h-80 rounded-full opacity-5 blur-[100px] transition-all duration-1000 ${current.color}`}></div>
 
-      <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 relative z-10">
-        <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center ${current.color} text-black shadow-xl shrink-0 transition-all duration-500`}>
-          {typeof current.icon === 'object' && 'type' in (current.icon as any) ? React.cloneElement(current.icon as React.ReactElement, { size: 28, strokeWidth: 2 }) : current.icon}
+      <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16 relative z-10">
+        <div className={`w-20 h-20 md:w-28 md:h-28 rounded-3xl flex items-center justify-center ${current.color} text-black shadow-[0_20px_50px_rgba(0,0,0,0.3)] shrink-0 transition-all duration-500`}>
+          {typeof current.icon === 'object' && 'type' in (current.icon as any) ? React.cloneElement(current.icon as React.ReactElement, { size: 36, strokeWidth: 2 }) : current.icon}
         </div>
         
-        <div className="flex-1 text-center md:text-left space-y-2">
-          <div className="space-y-0.5">
-            <p className="text-[7px] font-black tracking-[0.6em] text-gold-400 uppercase opacity-40">{current.title}</p>
-            <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white leading-tight">
+        <div className="flex-1 text-center md:text-left space-y-3">
+          <div className="space-y-1">
+            <p className="text-[9px] font-black tracking-[0.5em] text-gold-400 uppercase opacity-60">{current.title}_SISTEMA</p>
+            <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white leading-none">
               {isCompletionNotice ? 'ACTIVO ENTREGADO' : 
                state === 'en_camino' ? 'LOGÍSTICA EN MOVIMIENTO' : 
                state === 'listo' ? 'LISTO PARA DESPACHO' : 
@@ -202,32 +374,46 @@ const SemaforoStatus = ({
             </h3>
           </div>
 
+          {state === 'preparando' && !isCompletionNotice && (
+            <p className="text-gold-400/40 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse">
+              PROTOCOLO DE SEGURIDAD APROBADO. PREPARANDO UNIDADES.
+            </p>
+          )}
+
           {['preparando', 'listo', 'en_camino'].includes(state) && (
-            <div className="mt-4 space-y-3">
-              <div className="p-6 bg-white/[0.01] border border-white/5 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="mt-6 space-y-4">
+              <div className="p-6 bg-blue-500/[0.08] border border-blue-500/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="flex items-center gap-5">
-                  <div className="relative">
-                    <div className="w-14 h-14 bg-[#0A0A0A] border border-gold-400/10 rounded-xl flex items-center justify-center text-gold-400 font-black overflow-hidden transition-all">
+                  <div className="relative group/photo">
+                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg overflow-hidden border border-white/10">
                       {request.foto_repartidor ? (
                         <img src={request.foto_repartidor} alt="Repartidor" className="w-full h-full object-cover" />
                       ) : (
-                        <UserIcon size={20} />
+                        <UserIcon size={28} />
                       )}
                     </div>
+                    <button 
+                      onClick={() => setShowPreferences(!showPreferences)}
+                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-black border border-white/10 rounded-full flex items-center justify-center text-gold-400 hover:text-white transition-colors shadow-xl z-20"
+                      title="Preferencias de Contacto"
+                    >
+                      <Settings size={14} className={showPreferences ? 'animate-spin-slow' : ''} />
+                    </button>
                   </div>
                   <div>
-                    <p className="text-[6px] text-gold-400 font-black uppercase tracking-[0.2em] mb-0.5 opacity-40">OPERADOR</p>
-                    <p className="text-sm font-black text-white uppercase tracking-tight">{request.nombre_repartidor || 'REPARTIDOR_GOLDEN'}</p>
+                    <p className="text-[8px] text-blue-400 font-black uppercase tracking-widest mb-1">OPERADOR_ASIGNADO</p>
+                    <p className="text-base font-black text-white uppercase tracking-tight">{request.nombre_repartidor || 'REPARTIDOR_GOLDEN'}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {request.llamada_directa_activa && (
                     <a 
                       href={`tel:${request.telefono_repartidor}`}
-                      className="w-10 h-10 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center text-white hover:bg-gold-400 hover:text-black transition-all"
+                      className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white hover:bg-blue-600 hover:border-blue-500 transition-all active:scale-95"
+                      title="Llamada Directa"
                     >
-                      <Phone size={16} />
+                      <Phone size={20} />
                     </a>
                   )}
                   {request.whatsapp_activo && (
@@ -463,17 +649,42 @@ const AssetDetailModal = ({ asset, onClose, allRequests }: { asset: any, onClose
               </div>
 
               {isEnCamino && request && (
-                <div className="p-6 bg-gold-400 text-black space-y-4 shadow-xl rounded-[1.5rem]">
-                  <div className="flex justify-between items-center border-b border-black/5 pb-3">
+                <div className="p-6 bg-blue-600 text-white space-y-6 shadow-[0_15px_30px_rgba(37,99,235,0.2)]">
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
                     <div className="flex items-center gap-2">
                       <Lock size={14} />
-                      <p className="text-[8px] font-black uppercase tracking-[0.2em]">TOKEN</p>
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em]">TOKEN_DE_ENTREGA</p>
                     </div>
-                    <p className="text-xl font-mono font-black tracking-widest">{request.token_entrega}</p>
+                    <p className="text-2xl font-mono font-black tracking-[0.2em]">{request.token_entrega}</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Truck size={16} />
-                    <p className="text-[9px] font-black uppercase tracking-tight">{request.driver_id ? 'EN RUTA' : 'ASIGNANDO...'}</p>
+
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden border border-white/10">
+                      {request.foto_repartidor ? (
+                        <img src={request.foto_repartidor} alt="Repartidor" className="w-full h-full object-cover" />
+                      ) : (
+                        <UserIcon size={20} />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[7px] opacity-60 font-black uppercase tracking-widest mb-1">OPERADOR_ASIGNADO</p>
+                      <p className="text-sm font-black uppercase tracking-tight">{request.nombre_repartidor || 'REPARTIDOR_GOLDEN'}</p>
+                    </div>
+                    {request.llamada_directa_activa && request.telefono_repartidor && (
+                      <a 
+                        href={`tel:${request.telefono_repartidor}`}
+                        className="ml-auto w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors"
+                      >
+                        <Phone size={16} />
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2 opacity-60">
+                    <div className="w-6 h-6 bg-white/10 flex items-center justify-center rounded-lg">
+                      <Truck size={12} />
+                    </div>
+                    <p className="text-[9px] font-black uppercase tracking-widest">ESTADO: EN RUTA</p>
                   </div>
                 </div>
               )}
@@ -865,12 +1076,13 @@ export const Portfolio: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('disponibles');
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>('todos');
   const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
-  const [activeDeliveryRequest, setActiveDeliveryRequest] = useState<any | null>(null);
+  const [activeDeliveryRequests, setActiveDeliveryRequests] = useState<any[]>([]);
   const [allRequests, setAllRequests] = useState<any[]>([]);
   const [completedRequest, setCompletedRequest] = useState<any | null>(null);
   const [isUserApproved, setIsUserApproved] = useState(false);
   const [lockedProductIds, setLockedProductIds] = useState<string[]>([]);
   const [deliveredProductIds, setDeliveredProductIds] = useState<string[]>([]);
+  const [selectedDeliveryForSidebar, setSelectedDeliveryForSidebar] = useState<any | null>(null);
   
   const subTabCounts = useMemo(() => {
     const counts = { todos: 0, en_proceso: 0, aprobado: 0, en_ruta: 0 };
@@ -929,22 +1141,24 @@ export const Portfolio: React.FC = () => {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [pinRevealed, setPinRevealed] = useState(false);
 
+  const [requestToRate, setRequestToRate] = useState<any | null>(null);
+
   useEffect(() => {
-    if (activeDeliveryRequest) {
+    if (activeDeliveryRequests.length > 0) {
       setPinRevealed(false);
     }
-  }, [activeDeliveryRequest?.id_pedido_maestro]);
+  }, [activeDeliveryRequests.map(r => r.id_pedido_maestro).join(',')]);
 
   const handleRatingSubmit = async (rating: number, comment: string) => {
-    if (!activeDeliveryRequest) return;
+    if (!requestToRate) return;
     
     setIsSubmittingRating(true);
     try {
       const { error } = await supabase
         .from('resenas_entregas')
         .insert({
-          pedido_id: activeDeliveryRequest.id_pedido_maestro,
-          repartidor_id: activeDeliveryRequest.operador_id,
+          pedido_id: requestToRate.id_pedido_maestro,
+          repartidor_id: requestToRate.operador_id,
           socio_id: user.id,
           calificacion: rating,
           comentario: comment
@@ -954,6 +1168,7 @@ export const Portfolio: React.FC = () => {
 
       setPinRevealed(true);
       setShowRatingModal(false);
+      setRequestToRate(null);
     } catch (err) {
       console.error("Error submitting rating:", err);
       alert("Error al enviar la calificación. Por favor, intente de nuevo.");
@@ -1028,7 +1243,7 @@ export const Portfolio: React.FC = () => {
           chat_interno_activo, 
           llamada_directa_activa, 
           whatsapp_activo,
-          staff_credenciales (
+          staff_credenciales!fk_entrega_operador_staff (
             nombre_operador,
             foto_url,
             telefono_contacto
@@ -1055,11 +1270,21 @@ export const Portfolio: React.FC = () => {
 
       setAllRequests(requestsWithMaestro);
 
-      const activeRequestData = requestsWithMaestro
+      const activeRequests = requestsWithMaestro
         .filter(r => ['pendiente', 'preparando', 'listo', 'en_camino'].includes(r.estado_solicitud))
-        .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())[0] || null;
+        .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
-      setActiveDeliveryRequest(activeRequestData);
+      // Agrupar por id_pedido_maestro para mostrar una notificación por entrega maestra
+      const uniqueActiveRequests = Array.from(
+        activeRequests.reduce((map, item) => {
+          if (!map.has(item.id_pedido_maestro)) {
+            map.set(item.id_pedido_maestro, item);
+          }
+          return map;
+        }, new Map()).values()
+      );
+
+      setActiveDeliveryRequests(uniqueActiveRequests);
 
       if (requestsWithMaestro) {
         const lockedIds = requestsWithMaestro
@@ -1121,42 +1346,7 @@ export const Portfolio: React.FC = () => {
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'entregas_maestras' }, async (payload: any) => {
         if (payload.new?.usuario_id === user?.id) {
-          // Actualización automática de UI para el pedido actual
-          if (activeDeliveryRequest && payload.new.id_pedido === activeDeliveryRequest.id_pedido_maestro) {
-            let driverInfo = {};
-            if (payload.new.operador_id) {
-              const { data: driverData } = await supabase
-                .from('staff_credenciales')
-                .select('nombre_operador, telefono_contacto, foto_url')
-                .eq('id', payload.new.operador_id)
-                .single();
-              
-              if (driverData) {
-                driverInfo = {
-                  nombre_repartidor: driverData.nombre_operador,
-                  telefono_repartidor: driverData.telefono_contacto,
-                  foto_repartidor: driverData.foto_url
-                };
-              }
-            }
-
-            setActiveDeliveryRequest((prev: any) => ({
-              ...prev,
-              ...driverInfo,
-              estado_solicitud: payload.new.estado_maestro,
-              token_entrega: payload.new.token_entrega,
-              operador_id: payload.new.operador_id
-            }));
-          }
-
-          if (payload.new.estado_maestro === 'entregado') {
-            setCompletedRequest(payload.new);
-            // Liberar historial refrescando activos
-            fetchAssets(true, true);
-          }
-        }
-        // Solo refrescar si no estamos en medio de una solicitud
-        if (!showCheckoutModal && !isProcessing) {
+          // Refrescar todo para asegurar consistencia con múltiples pedidos
           fetchAssets(false, true);
         }
       })
@@ -1226,7 +1416,7 @@ export const Portfolio: React.FC = () => {
       return;
     }
 
-    const availableBalance = user.vault_balance ?? user.balance ?? 0;
+    const availableBalance = user?.vault_balance ?? 0;
     const totalCost = (deliveryMethod === 'domicilio' ? deliveryCost : 0);
 
     if (availableBalance < totalCost) {
@@ -1251,8 +1441,8 @@ export const Portfolio: React.FC = () => {
         .from('entregas_maestras')
         .insert({
           id_pedido: idPedidoMaestro,
-          socio_id: user.id,
-          usuario_id: user.id,
+          socio_id: user?.id,
+          usuario_id: user?.id,
           estado_maestro: 'pendiente',
           metodo: deliveryMethod,
           monto_envio_cobrar: totalCost,
@@ -1260,7 +1450,7 @@ export const Portfolio: React.FC = () => {
           numero_casa: addressForm.casa_numero,
           referencia: addressForm.referencias,
           ciudad: addressForm.ciudad,
-          nombre_cliente: user.nombre_completo || user.full_name || user.email,
+          nombre_cliente: user?.full_name || user?.email,
           telefono: addressForm.telefono_contacto,
           // Nuevos campos obligatorios
           quien_recibe: addressForm.quien_recibe,
@@ -1284,8 +1474,8 @@ export const Portfolio: React.FC = () => {
 
         return {
           id_pedido_maestro: idPedidoMaestro,
-          socio_email: user.email,
-          socio_id: user.id,
+          socio_email: user?.email,
+          socio_id: user?.id,
           metodo: deliveryMethod,
           // Paquete de Datos Descriptivo para el Repartidor
           productos_ids: [{
@@ -1347,80 +1537,85 @@ export const Portfolio: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white relative font-heading overflow-hidden flex flex-col">
-      {/* ATMÓSFERA LUMÍNICA GLOBAL - REFINADA */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          {/* Luz Blanca Limpia en la esquina superior izquierda */}
-          <div className="absolute -top-[10%] -left-[10%] w-[70vw] h-[60vh] opacity-30"
-               style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 70%)', filter: 'blur(100px)' }}></div>
+      {/* ATMÓSFERA LUMÍNICA GLOBAL - REFINADA Y POTENCIADA */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#080808]">
+          {/* Luz Blanca Limpia en la esquina superior izquierda - INTENSIFICADA */}
+          <div className="absolute -top-[15%] -left-[15%] w-[100vw] h-[100vh] opacity-70"
+               style={{ background: 'radial-gradient(circle at 0% 0%, rgba(255,255,255,0.18) 0%, transparent 75%)', filter: 'blur(140px)' }}></div>
           
+          {/* Luz Blanca Central para claridad */}
+          <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[120vw] h-[80vh] opacity-[0.25]"
+               style={{ background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)', filter: 'blur(160px)' }}></div>
+
           {/* Luz Dorada Sutil en la esquina inferior derecha */}
-          <div className="absolute bottom-0 right-0 w-[60vw] h-[50vh] opacity-[0.1]"
-               style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 70%)', filter: 'blur(120px)' }}></div>
+          <div className="absolute -bottom-[15%] -right-[15%] w-[100vw] h-[100vh] opacity-[0.4]"
+               style={{ background: 'radial-gradient(circle at 100% 100%, rgba(212,175,55,0.12) 0%, transparent 75%)', filter: 'blur(160px)' }}></div>
           
-          {/* Capa de profundidad */}
-          <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]"></div>
+          {/* Capa de profundidad sutil */}
+          <div className="absolute inset-0 bg-black/5 backdrop-blur-[0.5px]"></div>
       </div>
 
       <div className={`relative z-10 flex-1 flex flex-col transition-all duration-1000 ${successMsg || errorMsg ? 'blur-3xl scale-95 opacity-0' : 'opacity-100'}`}>
-        <header className="max-w-[1400px] w-full mx-auto px-10 pt-32 pb-16">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 opacity-30">
-              <div className="w-4 h-[1px] bg-gold-400"></div>
-              <p className="text-[8px] font-black text-gold-400 uppercase tracking-[0.6em]">SISTEMA_DE_ACTIVOS</p>
-            </div>
-            <h1 className="text-7xl font-extralight text-white uppercase tracking-tighter leading-[0.85]">
-              PORTAFOLIO
+        <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 pt-12 md:pt-20 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+          <div className="space-y-1">
+            <p className="text-gold-400 text-[8px] font-black uppercase tracking-[0.6em] opacity-50">GESTIÓN_PATRIMONIAL</p>
+            <h1 className="font-heading text-2xl md:text-3xl text-white uppercase tracking-tighter leading-none font-light">
+              MI <span className="text-gold-metallic font-black">PORTAFOLIO</span>
             </h1>
-            <div className="flex items-center gap-6 pt-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">TOTAL_GP</span>
-                <span className="text-xl font-light text-gold-400 tracking-tight">
-                  {Math.round(assets.reduce((acc, a) => acc + Number(a.precio_congelado), 0)).toLocaleString()}
-                </span>
-              </div>
-              <div className="w-[1px] h-4 bg-white/10"></div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">ACTIVOS</span>
-                <span className="text-xl font-light text-white tracking-tight">{assets.length}</span>
-              </div>
-            </div>
+          </div>
+          <div className="relative w-full md:w-80 group">
+            <Search size={14} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold-400 transition-colors" />
+            <input 
+              type="text" placeholder="BUSCAR ACTIVOS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-white/[0.03] py-4 pl-16 pr-6 text-[9px] uppercase tracking-[0.4em] outline-none focus:bg-white/[0.05] transition-all backdrop-blur-2xl font-black text-white rounded-2xl"
+            />
           </div>
         </header>
 
-        <div className="max-w-[1400px] w-full mx-auto px-10 flex gap-12 border-b border-white/5 mb-12">
+        {activeTab === 'disponibles' && activeSubTab !== 'en_ruta' && activeDeliveryRequests.length > 0 && (
+          <DeliveryStories 
+            requests={activeDeliveryRequests} 
+            onStoryClick={(req) => setSelectedDeliveryForSidebar(req)} 
+          />
+        )}
+
+        <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex justify-center gap-8 md:gap-16 mb-12 relative z-20">
           {(['congelados', 'disponibles', 'historial'] as const).map(tab => (
             <button 
               key={tab} onClick={() => { setActiveTab(tab); setSelectedIds([]); setActiveSubTab('todos'); }}
-              className={`pb-6 text-[10px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap relative ${activeTab === tab ? 'text-gold-400' : 'text-white/20 hover:text-white/40'}`}
+              className={`pb-6 text-[9px] font-black uppercase tracking-[0.5em] transition-all whitespace-nowrap relative ${activeTab === tab ? 'text-gold-400' : 'text-white/30 hover:text-white/50'}`}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-[1px] bg-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold-400 shadow-[0_0_20px_rgba(212,175,55,0.8)]" />
               )}
             </button>
           ))}
         </div>
 
         {activeTab === 'disponibles' && (
-          <div className="flex justify-center gap-4 mb-8 -mt-2 px-4 overflow-x-auto no-scrollbar">
+          <div className="flex justify-center gap-2 mb-10 -mt-4 px-4 items-center">
             {(['todos', 'en_proceso', 'aprobado', 'en_ruta'] as const).map(sub => {
               const count = subTabCounts[sub];
-              const isActive = activeSubTab === sub;
+              const hasActivity = count > 0 && sub !== 'todos';
               
               return (
                 <button 
                   key={sub} onClick={() => setActiveSubTab(sub)}
-                  className={`px-4 py-2 text-[6px] font-black uppercase tracking-[0.2em] transition-all rounded-full border flex items-center gap-2 whitespace-nowrap ${
-                    isActive 
-                      ? 'bg-gold-400 border-gold-400 text-black shadow-lg shadow-gold-400/20' 
-                      : 'bg-white/[0.02] border-white/5 text-white/30 hover:text-white/50'
-                  }`}
+                  className={`px-2 py-3 text-[6.5px] font-black uppercase tracking-[0.1em] transition-all border relative flex items-center justify-center min-w-[75px] md:min-w-[100px] whitespace-nowrap ${
+                    activeSubTab === sub 
+                      ? 'bg-gold-400/10 border-gold-400/30 text-gold-400' 
+                      : 'bg-white/[0.01] border-white/5 text-white/20 hover:text-white/40'
+                  } ${hasActivity ? 'animate-pulse shadow-[0_0_20px_rgba(212,175,55,0.1)] border-gold-400/40' : ''}`}
                 >
                   {sub.replace('_', ' ')}
                   {count > 0 && (
-                    <span className={`px-1.5 py-0.5 rounded-full text-[5px] font-black ${isActive ? 'bg-black/20 text-black' : 'bg-gold-400 text-black'}`}>
-                      {count}
-                    </span>
+                    <motion.div 
+                      initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gold-400 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.5)] border border-black z-20"
+                    >
+                      <span className="text-black text-[7px] font-black">{count}</span>
+                    </motion.div>
                   )}
                 </button>
               );
@@ -1432,53 +1627,61 @@ export const Portfolio: React.FC = () => {
           <div className="max-w-[1400px] mx-auto">
             {/* Notificación Principal (Semaforo) */}
             {(activeTab === 'disponibles' || activeTab === 'congelados') && (
-              <div className="mb-8">
-                {completedRequest ? (
+              <div className="mb-8 space-y-6">
+                {completedRequest && (
                   <SemaforoStatus request={completedRequest} isCompletionNotice setCompletedRequest={setCompletedRequest} />
-                ) : activeDeliveryRequest && (activeSubTab === 'en_ruta' || activeTab === 'congelados') ? (
-                  <SemaforoStatus 
-                    request={activeDeliveryRequest} 
-                    setCompletedRequest={setCompletedRequest} 
-                    onReceiveOrder={() => setShowRatingModal(true)}
-                    pinRevealed={pinRevealed}
-                    onRefresh={() => fetchAssets(true, true)}
-                  />
-                ) : null}
+                )}
+                {activeDeliveryRequests.length > 0 && (activeSubTab === 'en_ruta' || activeTab === 'congelados') && (
+                  activeDeliveryRequests.map((req, idx) => (
+                    <SemaforoStatus 
+                      key={req.id_pedido_maestro || idx}
+                      request={req} 
+                      setCompletedRequest={setCompletedRequest} 
+                      onReceiveOrder={() => {
+                        setRequestToRate(req);
+                        setShowRatingModal(true);
+                      }}
+                      pinRevealed={pinRevealed}
+                      onRefresh={() => fetchAssets(true, true)}
+                    />
+                  ))
+                )}
               </div>
             )}
 
             {/* Vista de Resumen "Todos" */}
             {activeTab === 'disponibles' && activeSubTab === 'todos' && !loading && (
-              <div className="mb-20">
-                <div className="flex items-center gap-4 opacity-20 mb-10">
-                  <div className="w-8 h-[1px] bg-white"></div>
-                  <span className="text-[9px] font-black uppercase tracking-[0.8em] text-white">ESTADOS_LOGÍSTICOS</span>
+              <div className="space-y-6 mb-12">
+                <div className="flex items-center gap-3 opacity-30 mb-8">
+                  <div className="w-8 h-[1px] bg-gold-400"></div>
+                  <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white">RESUMEN_DE_OPERACIONES</span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
-                    { id: 'en_proceso', label: 'EN_PROCESO', icon: <Clock size={16} />, color: 'text-amber-500', bg: 'bg-amber-500/5' },
-                    { id: 'aprobado', label: 'APROBADOS', icon: <CheckCircle2 size={16} />, color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
-                    { id: 'en_ruta', label: 'EN_RUTA', icon: <Truck size={16} />, color: 'text-sky-500', bg: 'bg-sky-500/5' }
+                    { id: 'en_proceso', label: 'EN PROCESO', icon: <Clock />, color: 'text-red-400', bg: 'bg-red-400/5', border: 'border-red-400/20' },
+                    { id: 'aprobado', label: 'APROBADOS', icon: <CheckCircle2 />, color: 'text-green-400', bg: 'bg-green-400/5', border: 'border-green-400/20' },
+                    { id: 'en_ruta', label: 'EN RUTA', icon: <Truck />, color: 'text-blue-400', bg: 'bg-blue-400/5', border: 'border-blue-400/20' }
                   ].map(cat => {
                     const count = subTabCounts[cat.id as keyof typeof subTabCounts];
                     return (
-                      <button 
-                        key={cat.id} 
-                        onClick={() => setActiveSubTab(cat.id as any)}
-                        className="group p-8 bg-white/[0.01] border border-white/5 rounded-3xl flex items-center justify-between hover:bg-white/[0.03] transition-all text-left"
-                      >
-                        <div className="flex items-center gap-6">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${cat.color} bg-white/5 border border-white/5 group-hover:bg-white group-hover:text-black transition-all`}>
+                      <div key={cat.id} className={`p-8 ${cat.bg} border ${cat.border} rounded-2xl flex flex-col justify-between group hover:bg-white/[0.02] transition-all`}>
+                        <div className="space-y-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${cat.color} bg-white/5 border border-white/5`}>
                             {cat.icon}
                           </div>
                           <div>
-                            <p className="text-[10px] font-black text-white uppercase tracking-tight">{cat.label}</p>
-                            <p className="text-2xl font-light text-white/40 tracking-tighter">{count}</p>
+                            <p className="text-[7px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">{cat.label}_SISTEMA</p>
+                            <h4 className="text-2xl font-black text-white tracking-tighter">{count} ACTIVOS</h4>
                           </div>
                         </div>
-                        <ChevronRight size={16} className="text-white/10 group-hover:text-gold-400 transition-all" />
-                      </button>
+                        <button 
+                          onClick={() => setActiveSubTab(cat.id as any)}
+                          className="mt-8 w-full py-4 bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-[0.3em] text-white hover:bg-gold-400 hover:text-black hover:border-gold-400 transition-all flex items-center justify-center gap-3"
+                        >
+                          VER CATEGORÍA <ArrowRight size={12} />
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -1504,8 +1707,8 @@ export const Portfolio: React.FC = () => {
                   <motion.div 
                     key={asset.id}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     onClick={() => {
                       const request = allRequests.find(r => r.productos_ids?.some((p: any) => String(p.id || p) === String(asset.id)));
                       const isLocked = lockedProductIds.includes(asset.id);
@@ -1516,24 +1719,29 @@ export const Portfolio: React.FC = () => {
                         setSelectedAsset(asset);
                       }
                     }}
-                    className={`p-10 border transition-all duration-700 group relative cursor-pointer overflow-hidden rounded-[2.5rem] ${
+                    className={`p-8 border transition-all duration-500 group relative cursor-pointer overflow-hidden ${
                       selectedIds.includes(asset.id) 
-                        ? 'bg-gold-400/[0.05] border-gold-400/40 shadow-[0_30px_60px_rgba(212,175,55,0.1)]' 
-                        : 'bg-white/[0.01] border-white/5 hover:border-white/20 hover:bg-white/[0.03]'
-                    } ${lockedProductIds.includes(asset.id) && activeTab !== 'historial' ? 'opacity-60' : ''}`}
+                        ? 'bg-gold-400/[0.08] border-gold-400 shadow-[0_20px_40px_rgba(212,175,55,0.1)]' 
+                        : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'
+                    } ${lockedProductIds.includes(asset.id) && activeTab !== 'historial' ? 'border-gold-400/20 opacity-80' : ''}`}
                   >
-                    <div className="flex justify-between items-start mb-10 relative z-10">
-                      <div className={`w-14 h-14 flex items-center justify-center rounded-2xl transition-all duration-700 ${
-                        selectedIds.includes(asset.id) ? 'bg-gold-400 text-black' : 'bg-white/[0.03] text-gold-400 border border-white/5'
+                    {/* Subtle background pattern */}
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                      <Package size={80} strokeWidth={1} />
+                    </div>
+
+                    <div className="flex justify-between items-start mb-8 relative z-10">
+                      <div className={`w-14 h-14 flex items-center justify-center rounded-2xl transition-all duration-500 ${
+                        selectedIds.includes(asset.id) ? 'bg-gold-400 text-black' : 'bg-white/5 text-gold-400 border border-white/5'
                       }`}>
-                        <Package size={24} strokeWidth={1} />
+                        <Package size={24} strokeWidth={1.5} />
                       </div>
                       
-                      <div className="flex flex-col items-end gap-3">
+                      <div className="flex flex-col items-end gap-2">
                         {activeTab === 'disponibles' && !allRequests.find(r => r.productos_ids?.some((p: any) => String(p.id || p) === String(asset.id))) && (
-                          <div className={`w-6 h-6 border rounded-full flex items-center justify-center transition-all duration-700 ${
-                            selectedIds.includes(asset.id) ? 'bg-gold-400 border-gold-400' : 
-                            lockedProductIds.includes(asset.id) ? 'bg-gray-500/20 border-white/10' : 'border-white/10 group-hover:border-white/40'
+                          <div className={`w-6 h-6 border flex items-center justify-center transition-all duration-500 ${
+                            selectedIds.includes(asset.id) ? 'bg-gold-400 border-gold-400 scale-110' : 
+                            lockedProductIds.includes(asset.id) ? 'bg-gray-500/20 border-white/10 cursor-not-allowed' : 'border-white/20 group-hover:border-white/40'
                           }`}>
                             {selectedIds.includes(asset.id) && <CheckCircle2 size={14} className="text-black" />}
                           </div>
@@ -1544,15 +1752,15 @@ export const Portfolio: React.FC = () => {
                           if (!request || activeTab === 'historial') return null;
 
                           return (
-                            <span className={`text-[8px] font-black uppercase tracking-[0.4em] px-3 py-1.5 border rounded-full ${
+                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 border backdrop-blur-md ${
                               request.estado_solicitud === 'pendiente' 
-                                ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' 
+                                ? 'text-red-400 bg-red-400/10 border-red-400/20' 
                                 : request.estado_solicitud === 'en_camino'
-                                ? 'text-sky-400 bg-sky-400/10 border-sky-400/20'
-                                : 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
+                                ? 'text-blue-400 bg-blue-400/10 border-blue-500/20'
+                                : 'text-green-400 bg-green-400/10 border-green-400/20'
                             }`}>
-                              {request.estado_solicitud === 'pendiente' ? 'PROCESO' : 
-                               request.estado_solicitud === 'en_camino' ? 'RUTA' : 'APROBADO'}
+                              {request.estado_solicitud === 'pendiente' ? 'EN_PROCESO' : 
+                               request.estado_solicitud === 'en_camino' ? 'EN RUTA' : 'APROBADO'}
                             </span>
                           );
                         })()}
@@ -1560,34 +1768,56 @@ export const Portfolio: React.FC = () => {
                     </div>
 
                     <div className="relative z-10">
-                      <h3 className="text-2xl font-light uppercase mb-2 tracking-tighter leading-none text-white group-hover:text-gold-400 transition-colors">
+                      <h3 className="text-xl md:text-2xl font-black uppercase mb-1 tracking-tighter leading-none text-white group-hover:text-gold-400 transition-colors">
                         {asset.nombre_producto}
                       </h3>
-                      <p className="text-[10px] text-white/20 uppercase tracking-[0.4em] font-black mb-10">
+                      <p className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-bold mb-6">
                         {asset.cantidad} {asset.detalle_unidad}
                       </p>
                       
                       {activeTab === 'congelados' && (
-                        <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
-                          <p className="text-[8px] text-white/20 uppercase font-black tracking-[0.4em]">LIBERACIÓN</p>
-                          <p className="text-[11px] text-gold-400 font-black font-mono tracking-widest">
-                            {new Date(asset.fecha_vencimiento).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase()}
-                          </p>
+                        <div className="mb-6 p-4 bg-white/[0.01] border border-white/5 flex flex-col gap-1.5">
+                          <p className="text-[7px] text-gray-700 uppercase font-black tracking-[0.4em]">LIBERACIÓN_ESTIMADA</p>
+                          <div className="flex items-center gap-2.5">
+                            <Calendar size={10} className="text-gold-400/30" />
+                            <p className="text-[10px] text-white/60 font-black font-mono tracking-widest">
+                              {new Date(asset.fecha_vencimiento).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                            </p>
+                          </div>
                         </div>
                       )}
 
-                      <div className="pt-8 border-t border-white/5 flex justify-between items-end">
+                      {(() => {
+                        const request = allRequests.find(r => r.productos_ids?.some((p: any) => String(p.id || p) === String(asset.id)));
+                        if (!request || activeTab === 'historial' || request.estado_solicitud === 'pendiente') return null;
+
+                        return (
+                          <div className={`mb-8 p-4 border flex items-center justify-between group/token transition-all ${
+                            pinRevealed ? 'bg-gold-400 text-black border-black/10' : 'bg-white/5 text-white/40 border-white/10'
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              {pinRevealed ? <Lock size={14} /> : <Lock size={14} className="opacity-40" />}
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em]">TOKEN_ACCESO</span>
+                            </div>
+                            <span className={`text-sm font-black font-mono tracking-[0.2em] ${!pinRevealed ? 'blur-[4px] select-none' : ''}`}>
+                              {pinRevealed ? (request.token_entrega || '---') : '••••••'}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      <div className="pt-6 border-t border-white/5 flex justify-between items-end">
                         <div className="space-y-1">
-                          <p className="text-[8px] text-white/10 font-black uppercase tracking-widest">VALOR_GP</p>
-                          <p className="text-3xl font-light text-gold-400 tracking-tighter">
-                            {Math.round(Number(asset.precio_congelado)).toLocaleString()}
+                          <p className="text-[8px] text-gray-700 font-black uppercase tracking-widest">VALOR_ACTIVO</p>
+                          <p className="text-2xl font-mono font-black text-gold-400 tracking-tighter">
+                            {Math.round(Number(asset.precio_congelado)).toLocaleString()} <span className="text-[10px] opacity-40">GP</span>
                           </p>
                         </div>
 
                         {activeTab === 'historial' ? (
-                          <div className="flex items-center gap-2 text-emerald-500/40">
-                            <ShieldCheck size={16} />
-                            <span className="text-[8px] font-black uppercase tracking-widest">VERIFICADO</span>
+                          <div className="flex items-center gap-2 text-green-400/60">
+                            <ShieldCheck size={14} />
+                            <span className="text-[9px] font-black uppercase tracking-widest">ENTREGADO</span>
                           </div>
                         ) : (
                           <button 
@@ -1595,7 +1825,7 @@ export const Portfolio: React.FC = () => {
                               e.stopPropagation();
                               setSelectedAsset(asset);
                             }}
-                            className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 hover:text-gold-400 transition-all"
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-gold-400 transition-all border-b border-transparent hover:border-gold-400 pb-1"
                           >
                             DETALLES
                           </button>
@@ -1611,12 +1841,7 @@ export const Portfolio: React.FC = () => {
       </div>
 
       <AnimatePresence>
-        {activeDeliveryRequest && activeTab === 'disponibles' && activeSubTab !== 'en_ruta' && (
-          <FloatingDeliveryBar 
-            request={activeDeliveryRequest} 
-            onClick={() => setActiveSubTab('en_ruta')} 
-          />
-        )}
+        {/* Floating bars removed in favor of DeliveryStories */}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -1647,13 +1872,13 @@ export const Portfolio: React.FC = () => {
                     setShowCheckoutModal(true);
                   }} 
                   disabled={selectedIds.some(id => lockedProductIds.includes(id))}
-                  className={`group relative overflow-hidden px-10 py-5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-4 min-w-[200px] ${
+                  className={`group relative overflow-hidden px-10 py-5 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-4 min-w-[240px] ${
                     selectedIds.some(id => lockedProductIds.includes(id)) 
                     ? 'bg-white/5 text-white/20 cursor-not-allowed' 
-                    : 'bg-gold-400 text-black hover:bg-white'
+                    : 'bg-gold-400 text-black hover:bg-white shadow-[0_10px_30px_rgba(212,175,55,0.2)]'
                   }`}
                 >
-                  <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10 text-center leading-none">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] relative z-10 text-center leading-none">
                     {selectedIds.some(id => lockedProductIds.includes(id)) ? 'PROCESANDO...' : 'SOLICITAR ENTREGA'}
                   </span>
                   <ArrowRight size={16} className="relative z-10 group-hover:translate-x-1 transition-transform shrink-0" />
@@ -1775,6 +2000,18 @@ export const Portfolio: React.FC = () => {
           />
         )}
       </AnimatePresence>
+
+      <DeliverySidebar 
+        request={selectedDeliveryForSidebar}
+        isOpen={!!selectedDeliveryForSidebar}
+        onClose={() => setSelectedDeliveryForSidebar(null)}
+        onRefresh={() => fetchAssets(true, true)}
+        onReceiveOrder={() => {
+          setRequestToRate(selectedDeliveryForSidebar);
+          setShowRatingModal(true);
+        }}
+        pinRevealed={pinRevealed}
+      />
     </div>
   );
 };

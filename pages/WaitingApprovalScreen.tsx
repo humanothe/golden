@@ -102,9 +102,10 @@ export const WaitingApprovalScreen: React.FC = () => {
         table: 'solicitudes_escaneo',
         filter: `id=eq.${scanId}`
       }, (payload) => {
-        if (!payload.new || isFinished.current) return;
+        const newData = payload.new as any;
+        if (!newData || isFinished.current) return;
         
-        const nextState = payload.new.estado?.toLowerCase();
+        const nextState = newData.estado?.toLowerCase();
         
         if (nextState === 'aprobado' || nextState === 'approved') {
           isFinished.current = true;
@@ -113,7 +114,7 @@ export const WaitingApprovalScreen: React.FC = () => {
         } 
         else if (nextState === 'rechazado' || nextState === 'rejected' || nextState === 'cancelado') {
           isFinished.current = true;
-          setRejectionMessage(payload.new.mensaje_sistema || "SOLICITUD DENEGADA POR EL ESTABLECIMIENTO.");
+          setRejectionMessage(newData.mensaje_sistema || "SOLICITUD DENEGADA POR EL ESTABLECIMIENTO.");
           setStatus('rejected');
           
           // Redirección automática tras 4 segundos
