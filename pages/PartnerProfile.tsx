@@ -47,21 +47,21 @@ export const PartnerProfile: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black">
         <Loader2 size={40} className="text-gold-400 animate-spin" />
         <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.5em] text-gold-400/60">Cargando Perfil...</p>
     </div>
   );
 
   if (!partner) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-10 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black p-10 text-center">
         <p className="text-gray-500 font-black uppercase text-xs tracking-widest">Negocio no disponible en este Nodo.</p>
         <button onClick={() => navigate('/partners')} className="mt-8 text-gold-400 font-bold uppercase text-[10px] tracking-widest border-b border-gold-400 pb-1">Volver a la Red</button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans text-left overflow-x-hidden animate-fade-in pb-40">
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-sans text-left overflow-x-hidden animate-fade-in pb-40">
       <div className="relative h-[30vh] md:h-[40vh] w-full">
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></div>
         <img 
@@ -75,11 +75,11 @@ export const PartnerProfile: React.FC = () => {
         <div className="absolute top-8 left-6 right-6 z-20 flex justify-between items-center">
             <button 
               onClick={() => navigate('/partners')} 
-              className="p-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-white hover:bg-gold-400 hover:text-black transition-all"
+              className="p-4 bg-black/40 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-full text-black dark:text-white hover:bg-gold-400 hover:text-black transition-all"
             >
                 <ArrowLeft size={20} />
             </button>
-            <button className="p-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-white">
+            <button className="p-4 bg-black/40 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-full text-black dark:text-white">
                 <Share2 size={20} />
             </button>
         </div>
@@ -108,19 +108,19 @@ export const PartnerProfile: React.FC = () => {
                <span className="text-[9px] font-black uppercase">Aliado Verificado</span>
              </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tighter text-white leading-none">
+          <h1 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tighter text-black dark:text-white leading-none">
             {partner.nombre_negocio}
           </h1>
         </div>
 
-        <div className="p-10 bg-white/[0.02] border border-white/5 rounded-none relative overflow-hidden group">
+        <div className="p-10 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-none relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
               <Zap size={140} strokeWidth={1} />
             </div>
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
               <div>
                 <p className="text-[9px] text-gold-400 font-black uppercase tracking-[0.5em] mb-4">PRIVILEGIO DE SOCIO</p>
-                <h2 className="text-7xl md:text-8xl font-heading font-black text-white tracking-tighter leading-none">
+                <h2 className="text-7xl md:text-8xl font-heading font-black text-black dark:text-white tracking-tighter leading-none">
                   {partner.porcentaje_oferta}<span className="text-4xl md:text-5xl">%</span>
                 </h2>
                 <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">DESCUENTO FIJO</p>
@@ -128,7 +128,7 @@ export const PartnerProfile: React.FC = () => {
               <div className="flex flex-col gap-3 w-full md:w-auto">
                  <button 
                   onClick={handleStartDiscountFlow}
-                  className="px-10 py-6 bg-white text-black font-black uppercase text-[11px] tracking-[0.3em] shadow-[0_15px_40px_rgba(255,255,255,0.15)] hover:bg-gold-400 hover:scale-105 active:scale-95 transition-all animate-pulse"
+                  className="px-10 py-6 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-[11px] tracking-[0.3em] shadow-[0_15px_40px_rgba(255,255,255,0.15)] hover:bg-gold-400 hover:scale-105 active:scale-95 transition-all animate-pulse"
                  >
                    OBTENER DESCUENTO
                  </button>
@@ -136,7 +136,7 @@ export const PartnerProfile: React.FC = () => {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pt-8 border-t border-white/5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pt-8 border-t border-black/5 dark:border-white/5">
           <div className="md:col-span-8 space-y-8">
             <div className="space-y-4">
                <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-600 flex items-center gap-2">
@@ -151,10 +151,10 @@ export const PartnerProfile: React.FC = () => {
                <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-600 flex items-center gap-2">
                  <MapPin size={14} /> Ubicación Auditada
                </h3>
-               <div className="p-6 bg-white/[0.02] border border-white/5 flex items-start gap-4">
+               <div className="p-6 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-start gap-4">
                   <Navigation size={18} className="text-gold-400 shrink-0 mt-1" />
                   <div>
-                    <p className="text-sm font-bold text-white uppercase tracking-wider">{partner.direccion}</p>
+                    <p className="text-sm font-bold text-black dark:text-white uppercase tracking-wider">{partner.direccion}</p>
                     <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-1">{partner.provincia}, RD</p>
                   </div>
                </div>
@@ -162,15 +162,15 @@ export const PartnerProfile: React.FC = () => {
           </div>
 
           <div className="md:col-span-4 space-y-6">
-            <div className="p-8 bg-white/[0.02] border border-white/5 rounded-none space-y-6">
-               <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest border-b border-white/5 pb-3">SOPORTE DIRECTO</p>
+            <div className="p-8 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-none space-y-6">
+               <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest border-b border-black/5 dark:border-white/5 pb-3">SOPORTE DIRECTO</p>
                <div className="space-y-1">
                  <p className="text-[9px] text-gold-400 font-black uppercase tracking-widest">Contacto</p>
-                 <p className="text-lg font-mono font-bold text-white">{partner.telefono_comercial || 'N/A'}</p>
+                 <p className="text-lg font-mono font-bold text-black dark:text-white">{partner.telefono_comercial || 'N/A'}</p>
                </div>
                <a 
                 href={`tel:${partner.telefono_comercial}`}
-                className="w-full py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-[9px] tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-gold-400 hover:text-black transition-colors"
+                className="w-full py-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black dark:text-white font-black uppercase text-[9px] tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-gold-400 hover:text-black transition-colors"
                >
                  <Phone size={14} /> LLAMAR AHORA
                </a>

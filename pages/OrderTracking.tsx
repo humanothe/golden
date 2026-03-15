@@ -113,10 +113,10 @@ export const OrderTracking: React.FC = () => {
     { id: 4, label: 'Entregado', icon: <Home size={16} />, desc: 'Disfruta tu compra' },
   ];
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black"><Loader2 className="animate-spin text-gold-400" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black"><Loader2 className="animate-spin text-gold-400" /></div>;
 
   if (!latestOrder) return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center text-black dark:text-white">
           <Package size={48} className="text-gray-600 mb-4" />
           <p>No tienes pedidos activos.</p>
           <button onClick={() => navigate('/market')} className="mt-4 text-gold-400 font-bold underline">Ir a comprar</button>
@@ -126,7 +126,7 @@ export const OrderTracking: React.FC = () => {
   const currentStep = getStep(latestOrder.status);
 
   return (
-    <div className="min-h-screen bg-light-50 dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-light-50 dark:bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
         
         {/* Background Atmosphere */}
         <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-gold-400/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -135,7 +135,7 @@ export const OrderTracking: React.FC = () => {
         {/* Main Card Container */}
         <div className="relative z-10 w-full max-w-md animate-fade-in">
             
-            <div className="glass-panel rounded-[2.5rem] overflow-hidden border border-white/20 dark:border-white/10 shadow-2xl relative">
+            <div className="glass-panel rounded-[2.5rem] overflow-hidden border border-white/20 dark:border-black/10 dark:border-white/10 shadow-2xl relative">
                 
                 {/* Decorative Top Bar */}
                 <div className="h-2 w-full bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300"></div>
@@ -147,15 +147,15 @@ export const OrderTracking: React.FC = () => {
                         <div className="relative inline-block mb-4">
                             <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl"></div>
                             <div className="relative w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg mx-auto transform transition-transform hover:scale-110 duration-500">
-                                {currentStep === 4 ? <Check size={32} className="text-white" strokeWidth={4} /> : <Clock size={32} className="text-white animate-pulse" />}
+                                {currentStep === 4 ? <Check size={32} className="text-black dark:text-white" strokeWidth={4} /> : <Clock size={32} className="text-black dark:text-white animate-pulse" />}
                             </div>
                         </div>
-                        <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-1 tracking-tight">
+                        <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-black dark:text-white mb-1 tracking-tight">
                             {latestOrder.status === 'delivered' ? '¡Pedido Entregado!' : 'Seguimiento'}
                         </h1>
                         <div className="flex items-center justify-center gap-2 text-gold-600 dark:text-gold-400 font-mono text-sm bg-gold-400/10 rounded-full py-1 px-4 w-fit mx-auto mt-2 border border-gold-400/20">
                             <span className="font-bold">#{latestOrder.id.substring(0,8)}</span>
-                            <Copy size={12} className="cursor-pointer hover:text-white transition-colors" />
+                            <Copy size={12} className="cursor-pointer hover:text-black dark:hover:text-white transition-colors" />
                         </div>
                     </div>
 
@@ -165,9 +165,9 @@ export const OrderTracking: React.FC = () => {
                     </div>
 
                     {/* Divider */}
-                    <div className="border-t border-dashed border-gray-300 dark:border-white/10 my-8 w-full relative">
-                         <div className="absolute -left-12 -top-3 w-6 h-6 bg-light-50 dark:bg-black rounded-full"></div>
-                         <div className="absolute -right-12 -top-3 w-6 h-6 bg-light-50 dark:bg-black rounded-full"></div>
+                    <div className="border-t border-dashed border-gray-300 dark:border-black/10 dark:border-white/10 my-8 w-full relative">
+                         <div className="absolute -left-12 -top-3 w-6 h-6 bg-light-50 dark:bg-white dark:bg-black rounded-full"></div>
+                         <div className="absolute -right-12 -top-3 w-6 h-6 bg-light-50 dark:bg-white dark:bg-black rounded-full"></div>
                     </div>
 
                     {/* Actions */}
@@ -182,11 +182,11 @@ export const OrderTracking: React.FC = () => {
                         <div className="flex gap-4">
                             <button 
                                 onClick={() => navigate('/dashboard')}
-                                className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-500 hover:text-black dark:hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors"
+                                className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-black/5 dark:bg-white/5 text-gray-500 hover:text-black dark:hover:text-black dark:hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors"
                             >
                                 Inicio
                             </button>
-                             <button className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-500 hover:text-black dark:hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                             <button className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-black/5 dark:bg-white/5 text-gray-500 hover:text-black dark:hover:text-black dark:hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
                                 <Share2 size={14} /> Compartir
                             </button>
                         </div>

@@ -1,6 +1,6 @@
 import { supabase, isConfigured } from './supabaseClient';
 import { 
-  User, Business, Product
+  User, Business, Product, Order, OrderStatus, AppNotification
 } from '../types';
 
 const handleApiError = (e: any): string => {
@@ -173,10 +173,23 @@ export const api = {
       try {
         const { data } = await supabase
           .from('solicitudes_registro')
-          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url')
+          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url, descripcion_negocio, direccion, portada_url')
           .eq('dueño_id', userId)
           .maybeSingle();
-        return data;
+        if (!data) return null;
+        return {
+          id: data.id,
+          name: data.nombre_negocio,
+          description: data.descripcion_negocio || '',
+          logo_url: data.logo_url,
+          image_url: data.portada_url || '',
+          category: data.categoria,
+          rating: 4.8,
+          rating_count: 120,
+          delivery_time: '20-35 min',
+          address: data.direccion,
+          zone: data.provincia
+        } as Business;
       } catch (e) { return null; }
     },
     getBusinessById: async (id: string) => {
@@ -247,7 +260,7 @@ export const api = {
     getDriverActiveOrders: async (driverId: string) => {
       try {
         const { data } = await supabase
-          .from('pedidos_maestros')
+          .from('entregas_maestras')
           .select('*')
           .eq('operador_id', driverId)
           .in('estado_maestro', ['pendiente', 'en_camino'])
@@ -265,17 +278,19 @@ export const api = {
           customer_address: `${item.calle} ${item.numero_casa}, ${item.ciudad}`,
           customer_phone: item.telefono || '---',
           total: Number(item.total_pedido || 0),
-          status: item.estado_maestro === 'en_camino' ? 'picked_up' : 'pending',
+          status: (item.estado_maestro === 'en_camino' ? 'picked_up' : 'pending') as OrderStatus,
           created_at: item.fecha_creacion,
           productos_ids: [], // Se manejaría por id_pedido_maestro en solicitudes_entrega
-          items: []
+          items: [],
+          delivery_method: 'standard' as const,
+          payment_method: 'points' as const
         }));
       } catch (e) { return []; }
     },
     getDeliveryPool: async (_driverId: string) => {
       try {
         const { data } = await supabase
-          .from('pedidos_maestros')
+          .from('entregas_maestras')
           .select('*')
           .eq('estado_maestro', 'pendiente')
           .is('operador_id', null);
@@ -290,17 +305,19 @@ export const api = {
           customer_address: `${item.calle} ${item.numero_casa}, ${item.ciudad}`,
           customer_phone: item.telefono || '---',
           total: Number(item.total_pedido || 0),
-          status: 'pending',
+          status: 'pending' as OrderStatus,
           created_at: item.fecha_creacion,
           productos_ids: [],
-          items: []
+          items: [],
+          delivery_method: 'standard' as const,
+          payment_method: 'points' as const
         }));
       } catch (e) { return []; }
     },
     claimOrder: async (orderId: string, driverId: string) => {
       try {
         const { data, error } = await supabase
-          .from('pedidos_maestros')
+          .from('entregas_maestras')
           .update({ 
             operador_id: driverId,
             estado_maestro: 'pendiente' // O el estado que corresponda al ser tomado
@@ -315,7 +332,7 @@ export const api = {
       try {
         if (status === 'picked_up') {
           await supabase
-            .from('pedidos_maestros')
+            .from('entregas_maestras')
             .update({ estado_maestro: 'en_camino' })
             .eq('id_pedido', orderId);
           return { success: true };
@@ -324,7 +341,7 @@ export const api = {
         if (status === 'delivered') {
           // 1. Validar solicitud maestra
           const { data: pedido, error: fetchError } = await supabase
-            .from('pedidos_maestros')
+            .from('entregas_maestras')
             .select('*')
             .eq('id_pedido', orderId)
             .single();
@@ -346,7 +363,7 @@ export const api = {
           // 3. Transacción Multitabla
           // Paso A: Cambiar estado_maestro a 'entregado'
           const { error: errA } = await supabase
-            .from('pedidos_maestros')
+            .from('entregas_maestras')
             .update({ estado_maestro: 'entregado' })
             .eq('id_pedido', orderId);
 
@@ -373,7 +390,7 @@ export const api = {
     getBusinessOrders: async (businessId: string) => {
       try {
         const { data } = await supabase.from('orders')
-          .select('id, total, status, created_at')
+          .select('id, user_id, business_id, items, total, status, created_at, delivery_method, payment_method')
           .eq('business_id', businessId)
           .order('created_at', { ascending: false });
         return data || [];
@@ -384,7 +401,7 @@ export const api = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
         const { data } = await supabase.from('notifications')
-          .select('id, title, message, type, read, created_at')
+          .select('id, user_id, title, message, type, read, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         return data || [];

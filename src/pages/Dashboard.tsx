@@ -1,8 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { TrendingUp, Shield, Zap, ArrowUpRight } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       <div className="p-6 space-y-8">
@@ -35,9 +38,17 @@ export const Dashboard: React.FC = () => {
           </div>
           <h3 className="text-xs font-black uppercase tracking-widest text-gold-400 mb-2">Membresía Elite</h3>
           <p className="text-2xl font-black tracking-tighter mb-4">ACCESO A ACTIVOS<br/>EXCLUSIVOS</p>
-          <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white text-black px-4 py-2 rounded-full">
-            Ver Beneficios <ArrowUpRight size={14} />
-          </button>
+          <div className="flex gap-4">
+            <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white text-black px-4 py-2 rounded-full">
+              Ver Beneficios <ArrowUpRight size={14} />
+            </button>
+            <button 
+              onClick={() => navigate('/scanner')}
+              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-gold-400 text-black px-4 py-2 rounded-full"
+            >
+              Escanear Tarjeta
+            </button>
+          </div>
         </div>
 
         <section className="space-y-4">

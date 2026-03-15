@@ -1,33 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import React, { createContext, useContext, useState } from 'react';
 
-interface AuthContextType {
-  user: any;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<{ isAuthenticated: boolean; loading: boolean }>({
+  isAuthenticated: false,
+  loading: false,
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [isAuthenticated] = useState(false);
+  const [loading] = useState(false);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading }}>
       {children}
     </AuthContext.Provider>
   );

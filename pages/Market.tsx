@@ -240,52 +240,61 @@ export const Market: React.FC = () => {
                style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 60%)', filter: 'blur(100px)' }}></div>
       </div>
 
-      <header className="pt-[env(safe-area-inset-top)] px-6 lg:px-12 border-b border-white/5 sticky top-0 z-40 backdrop-blur-3xl bg-black/60">
-          <div className="max-w-[1400px] mx-auto pb-6 pt-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-                  <div className="flex items-center gap-4">
-                      {viewMode === 'products' && (
-                        <button onClick={() => setViewMode('categories')} className="p-3 bg-white/5 border border-white/10 rounded-full text-gold-400 hover:bg-gold-400 hover:text-black transition-all">
-                          <ArrowLeft size={20} />
-                        </button>
-                      )}
-                      <div className="space-y-1">
-                          <p className="text-[8px] text-gold-400 font-normal uppercase tracking-[0.6em]">ADQUISICIÓN_DE_ACTIVOS</p>
-                          <h1 className="font-heading text-3xl md:text-5xl text-white tracking-tighter uppercase leading-none font-normal">GOLDEN <span className="text-gold-metallic">MARKET</span></h1>
-                      </div>
-                  </div>
-                  <div className="relative w-full lg:w-96 group">
-                      <Search size={14} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-700" />
-                      <input type="text" placeholder="BUSCAR ACTIVO..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-6 py-4 bg-white/5 border border-white/5 rounded-none text-[10px] font-normal uppercase tracking-[0.3em] focus:border-gold-400 outline-none text-white placeholder:text-gray-800" />
-                  </div>
-              </div>
+      <header className="relative z-10 pt-40 pb-24 px-10 max-w-[1400px] w-full mx-auto">
+        <div className="space-y-8">
+          <div className="flex items-center gap-4 opacity-20">
+            <div className="w-12 h-[1px] bg-white"></div>
+            <p className="text-[9px] font-black text-white uppercase tracking-[1em]">ADQUISICIÓN_DE_ACTIVOS</p>
           </div>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+            <div className="flex items-center gap-8">
+              {viewMode === 'products' && (
+                <button onClick={() => setViewMode('categories')} className="w-16 h-16 bg-white/[0.02] border border-white/10 rounded-full flex items-center justify-center text-gold-400 hover:bg-white hover:text-black transition-all duration-500 shadow-2xl active:scale-90">
+                  <ArrowLeft size={24} strokeWidth={1.5} />
+                </button>
+              )}
+              <h1 className="text-[10rem] font-extralight text-white uppercase tracking-tighter leading-[0.75] flex flex-col">
+                GOLDEN <span className="font-black text-gold-400">MARKET</span>
+              </h1>
+            </div>
+            <div className="relative w-full lg:w-[450px] group">
+              <Search size={18} strokeWidth={1.5} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold-400 transition-colors" />
+              <input 
+                type="text" 
+                placeholder="BUSCAR_ACTIVO_EN_RED..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                className="w-full pl-16 pr-8 py-7 bg-white/[0.01] border border-white/5 rounded-none text-[11px] font-black uppercase tracking-[0.4em] focus:border-gold-400/30 outline-none text-white placeholder:text-white/10 transition-all duration-500" 
+              />
+            </div>
+          </div>
+        </div>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 mt-12 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-10 mt-12 relative z-10">
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">{Array(12).fill(0).map((_, i) => (<div key={i} className="aspect-square bg-white/[0.01] border border-white/5 animate-pulse"></div>))}</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">{Array(12).fill(0).map((_, i) => (<div key={i} className="aspect-square bg-white/[0.01] border border-white/5 rounded-none animate-pulse"></div>))}</div>
           ) : viewMode === 'categories' ? (
-            <div className="space-y-12">
-               <div className="flex items-center gap-3 opacity-30">
-                  <LayoutGrid size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">Explorar por Sector</span>
+            <div className="space-y-24">
+               <div className="flex items-center gap-6 opacity-20">
+                  <div className="w-16 h-[1px] bg-white"></div>
+                  <span className="text-[10px] font-black uppercase tracking-[1em] text-white">EXPLORAR_SECTORES_PRODUCTIVOS</span>
                </div>
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 animate-fade-in">
                   {categories.map((cat) => (
                     <div 
                       key={cat.id} 
                       onClick={() => selectCategory(cat)}
-                      className="group relative aspect-[4/3] overflow-hidden cursor-pointer border border-white/5 bg-black hover:border-gold-400/40 transition-all shadow-2xl"
+                      className="group relative aspect-[4/5] overflow-hidden cursor-pointer border border-white/5 bg-black rounded-none hover:border-gold-400/40 transition-all duration-700 shadow-2xl"
                     >
-                      <img src={cat.imagen_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974'} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt={cat.nombre_categoria} />
+                      <img src={cat.imagen_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974'} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-[2000ms]" alt={cat.nombre_categoria} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                      <div className="absolute bottom-8 left-8 right-8">
-                         <p className="text-[8px] text-gold-400 font-black uppercase tracking-[0.5em] mb-2 opacity-60">SECTOR_MARKET</p>
-                         <h3 className="text-2xl sm:text-3xl lg:text-xl xl:text-lg font-heading font-black text-white uppercase tracking-tighter leading-none group-hover:text-gold-metallic transition-all">{cat.nombre_categoria}</h3>
-                         <div className="mt-6 flex items-center gap-2 text-white/20 group-hover:text-gold-400 transition-colors">
-                            <span className="text-[9px] font-bold uppercase tracking-widest">INGRESAR</span>
-                            <ArrowRight size={12} />
+                      <div className="absolute bottom-12 left-12 right-12">
+                         <p className="text-[9px] text-gold-400 font-black uppercase tracking-[0.8em] mb-4 opacity-40">SECTOR_ESTRATÉGICO</p>
+                         <h3 className="text-4xl font-light text-white uppercase tracking-tighter leading-none group-hover:text-gold-400 transition-all duration-500">{cat.nombre_categoria}</h3>
+                         <div className="mt-10 flex items-center gap-4 text-white/10 group-hover:text-gold-400 transition-all duration-500">
+                            <span className="text-[10px] font-black uppercase tracking-[0.5em]">INGRESAR_A_RECURSOS</span>
+                            <ArrowRight size={16} strokeWidth={1.5} />
                          </div>
                       </div>
                     </div>
@@ -293,41 +302,48 @@ export const Market: React.FC = () => {
                </div>
             </div>
           ) : (
-            <div className="animate-fade-in">
-                <div className="flex items-center justify-between mb-12">
-                   <div className="flex items-center gap-3">
-                      <Layers size={16} className="text-gold-400" />
-                      <h2 className="text-xl md:text-2xl font-heading font-black uppercase tracking-widest text-white">
-                        {activeCategory?.nombre_categoria || 'TODOS LOS ACTIVOS'}
-                      </h2>
+            <div className="animate-fade-in space-y-20">
+                <div className="flex items-end justify-between pb-12 border-b border-white/5">
+                   <div className="flex items-center gap-8">
+                      <div className="w-20 h-20 rounded-none bg-gold-400 text-black flex items-center justify-center shadow-2xl">
+                        <Layers size={32} strokeWidth={1.5} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-black text-gold-400 uppercase tracking-[0.6em] opacity-40">FILTRADO_POR_CATEGORÍA</p>
+                        <h2 className="text-5xl font-light uppercase tracking-tighter text-white leading-none">
+                          {activeCategory?.nombre_categoria || 'TODOS LOS ACTIVOS'}
+                        </h2>
+                      </div>
                    </div>
-                   <span className="text-[10px] font-mono text-gray-700">{filteredItems.length} RESULTADOS</span>
+                   <div className="text-right">
+                    <span className="text-[11px] font-black text-white/20 tracking-[0.5em] uppercase">{filteredItems.length} ACTIVOS_DISPONIBLES</span>
+                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10">
                     {filteredItems.map((item) => {
                         const { main, sub } = formatProductName(item.name);
                         return (
-                          <div key={item.id} onClick={() => { setSelectedProduct(item); setQuantity(1); setStepIndex(1); setErrorFeedback(null); }} className="relative group cursor-pointer border border-white/5 bg-white/[0.02] transition-all hover:border-gold-400/40 hover:bg-white/[0.08] p-8 flex flex-col items-center backdrop-blur-md overflow-hidden">
-                              <div className="w-24 h-24 mb-6 flex items-center justify-center relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                          <div key={item.id} onClick={() => { setSelectedProduct(item); setQuantity(1); setStepIndex(1); setErrorFeedback(null); }} className="group relative cursor-pointer border border-white/5 bg-white/[0.01] transition-all duration-700 hover:border-gold-400/40 hover:bg-white/[0.03] p-12 rounded-none flex flex-col items-center overflow-hidden shadow-xl">
+                              <div className="w-40 h-40 mb-10 flex items-center justify-center relative overflow-hidden rounded-none bg-white/[0.02] border border-white/5">
                                  <img 
                                    src={getProductImage(item.portada_url || item.icono_url)} 
-                                   className="w-full h-full object-cover relative z-10 transition-all duration-500 group-hover:scale-110" 
+                                   className="w-full h-full object-cover relative z-10 transition-all duration-1000 group-hover:scale-110 group-hover:brightness-110" 
                                    alt={item.name}
                                    onError={(e) => {
                                      (e.target as HTMLImageElement).src = '/icon-192.png';
-                                     (e.target as HTMLImageElement).className = "w-10 h-10 opacity-10 object-contain";
+                                     (e.target as HTMLImageElement).className = "w-12 h-12 opacity-10 object-contain";
                                    }}
                                  />
                               </div>
-                              <div className="text-center w-full space-y-4">
-                                  <div className="min-h-[40px] flex flex-col justify-center">
-                                    <h3 className="text-[10px] font-normal text-white uppercase tracking-widest leading-tight mb-1 line-clamp-1 px-2">{main}</h3>
-                                    {sub && <p className="text-[7px] text-gray-600 font-bold uppercase tracking-widest mb-2 italic">{sub}</p>}
+                              <div className="text-center w-full space-y-8">
+                                  <div className="min-h-[60px] flex flex-col justify-center">
+                                    <h3 className="text-xl font-light text-white uppercase tracking-tighter leading-tight mb-2 group-hover:text-gold-400 transition-colors">{main}</h3>
+                                    {sub && <p className="text-[8px] text-white/20 font-black uppercase tracking-[0.5em] italic">{sub}</p>}
                                   </div>
-                                  <div className="flex flex-col gap-1 items-center border-t border-white/5 pt-3">
-                                      <p className="text-[12px] font-heading font-normal text-gold-400 tracking-tight">RD$ {(item.precio_mercado || 0).toLocaleString()}</p>
-                                      <p className="text-[7px] text-gray-700 uppercase font-bold tracking-widest">VALOR_MERCADO</p>
+                                  <div className="flex flex-col gap-3 items-center pt-8 border-t border-white/5">
+                                      <p className="text-3xl font-light text-gold-400 tracking-tighter">RD$ {(item.precio_mercado || 0).toLocaleString()}</p>
+                                      <p className="text-[8px] text-white/10 uppercase font-black tracking-[0.6em]">VALOR_MERCADO_ACTUAL</p>
                                   </div>
                               </div>
                           </div>
@@ -349,263 +365,215 @@ export const Market: React.FC = () => {
                      style={{ background: 'radial-gradient(circle at 50% 100%, #D4AF37 0%, transparent 60%)', filter: 'blur(100px)' }}></div>
               </div>
 
-              <div className="relative z-10 w-full h-[35vh] md:h-[40vh] overflow-hidden bg-black/20">
+              <div className="relative z-10 w-full h-[40vh] md:h-[50vh] overflow-hidden">
                   <img 
                     src={getProductImage(selectedProduct.portada_url || selectedProduct.icono_url)} 
-                    className="w-full h-full object-cover brightness-[0.4]" 
+                    className="w-full h-full object-cover brightness-[0.3] scale-105" 
                     alt={selectedProduct.name} 
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black to-transparent opacity-90"></div>
-                  <div className="absolute inset-0 bg-black/40"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent"></div>
                   {(!transactionSuccess && !existingFreeze && !showConfirmModal) && (
-                    <button onClick={() => setSelectedProduct(null)} className="absolute top-8 left-8 p-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-gold-400 hover:text-black transition-all z-50 active:scale-90 shadow-2xl">
-                      <ArrowLeft size={24} />
+                    <button onClick={() => setSelectedProduct(null)} className="absolute top-12 left-12 p-5 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-full text-white hover:bg-white hover:text-black transition-all duration-500 z-50 active:scale-90 shadow-2xl">
+                      <ArrowLeft size={28} strokeWidth={1.5} />
                     </button>
                   )}
-                  <div className="absolute bottom-10 left-8 right-8">
-                      <div className="flex items-center gap-2 mb-4">
-                          <div className="px-3 py-1 bg-gold-400 text-black text-[8px] font-bold uppercase tracking-[0.4em]">PROTECCIÓN_GP</div>
-                          <ShieldCheck size={16} className="text-gold-400" />
+                  <div className="absolute bottom-16 left-12 right-12 max-w-[1400px] mx-auto">
+                      <div className="flex items-center gap-4 mb-6">
+                          <div className="px-4 py-1.5 bg-gold-400 text-black text-[9px] font-black uppercase tracking-[0.6em]">PROTECCIÓN_GP_ACTIVA</div>
+                          <ShieldCheck size={20} className="text-gold-400" />
                       </div>
+                      <h2 className="text-7xl md:text-9xl font-extralight text-white uppercase tracking-tighter leading-[0.8]">
+                        {formatProductName(selectedProduct.name).main}
+                      </h2>
                   </div>
               </div>
 
-              <div className="relative z-10 -mt-20 bg-[#050505] border-t border-white/10 pb-40 min-h-[80vh]">
-                  {/* ATMÓSFERA LUMÍNICA INTERNA */}
-                  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                      <div className="absolute top-0 left-0 w-[100%] h-[40%] opacity-[0.25]"
-                           style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
-                      <div className="absolute bottom-0 right-0 w-[100%] h-[40%] opacity-[0.1]"
-                           style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
-                  </div>
-
-                  <div className="max-w-2xl mx-auto relative z-10 p-8 md:p-16">
-                      {checkingFreeze ? (
-                        <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                            <Loader2 className="w-12 h-12 text-gold-400 animate-spin" />
-                            <p className="text-[10px] text-gold-400 font-black uppercase tracking-[0.5em]">Sincronizando Estatus...</p>
+              <div className="relative z-10 bg-[#050505] border-t border-white/5 pb-48 min-h-[60vh]">
+                  <div className="max-w-4xl mx-auto relative z-10 p-10 md:p-24">
+                      {loading && (
+                        <div className="flex flex-col items-center justify-center py-32 space-y-8">
+                            <Loader2 className="w-16 h-16 text-gold-400 animate-spin" strokeWidth={1} />
+                            <p className="text-[11px] text-gold-400 font-black uppercase tracking-[0.8em] animate-pulse">Sincronizando Nodo Maestro...</p>
                         </div>
-                      ) : (transactionSuccess || existingFreeze) ? (
-                        <div className="animate-enter-screen space-y-12 py-10">
-                           <div className={`w-20 h-20 ${transactionSuccess ? 'bg-green-500' : 'bg-gold-400'} text-black rounded-none flex items-center justify-center mx-auto shadow-2xl mb-12`}><BadgeCheck size={40} strokeWidth={2.5} /></div>
-                           <div className="text-center mb-16">
-                              <h2 className="text-3xl font-heading font-normal uppercase text-white tracking-tighter mb-2">
+                      )}
+
+                      {(!loading && (transactionSuccess || existingFreeze)) && (
+                        <div className="animate-enter-screen space-y-16 py-12">
+                           <div className={`w-24 h-24 ${transactionSuccess ? 'bg-green-500' : 'bg-gold-400'} text-black rounded-none flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-16`}><BadgeCheck size={48} strokeWidth={1.5} /></div>
+                           <div className="text-center mb-20 space-y-4">
+                              <h2 className="text-5xl font-light uppercase text-white tracking-tighter leading-none">
                                 {transactionSuccess ? 'BLINDAJE ACTIVADO' : 'ACTIVO PROTEGIDO'}
                               </h2>
-                              <p className="text-[8px] font-mono tracking-[0.5em] text-gold-400 uppercase font-black italic">
-                                {transactionSuccess ? 'CERTIFICADO TÉCNICO GENERADO' : 'ESTADO: VIGENTE Y ASEGURADO'}
+                              <p className="text-[10px] font-black tracking-[0.8em] text-gold-400 uppercase italic opacity-60">
+                                {transactionSuccess ? 'CERTIFICADO_TÉCNICO_GENERADO' : 'ESTADO: VIGENTE_Y_ASEGURADO'}
                               </p>
                            </div>
 
-                           {/* RESUMEN DETALLADO DEL BLINDAJE (CERTIFICADO DIGITAL) */}
-                           <div className="bg-white/[0.02] border border-white/5 p-8 space-y-10 shadow-inner relative">
-                              <div className="absolute top-0 right-0 p-4 opacity-[0.03]"><ShieldCheck size={100} /></div>
-                              <div className="space-y-3 relative z-10">
-                                  <p className="text-[7px] text-gray-600 uppercase tracking-[0.5em] font-black border-b border-white/5 pb-3">ACTIVO_CONGELADO</p>
-                                  <h3 className="text-2xl font-heading font-normal text-white uppercase tracking-tighter">{selectedProduct.name}</h3>
+                           <div className="bg-white/[0.01] border border-white/5 p-12 space-y-12 shadow-2xl relative overflow-hidden">
+                              <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none"><ShieldCheck size={150} strokeWidth={0.5} /></div>
+                              <div className="space-y-4 relative z-10">
+                                  <p className="text-[8px] text-white/20 uppercase tracking-[0.8em] font-black border-b border-white/5 pb-4">ACTIVO_CONGELADO_EN_RED</p>
+                                  <h3 className="text-4xl font-light text-white uppercase tracking-tighter leading-none">{selectedProduct.name}</h3>
                               </div>
 
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-white/5 relative z-10">
-                                 <div className="space-y-1">
-                                    <p className="text-[6px] text-gray-700 uppercase font-black">CANTIDAD</p>
-                                    <div className="flex items-center gap-2 text-white">
-                                       <span className="text-[9px] font-bold">{detailData.cantidad} UNID.</span>
-                                    </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-10 border-t border-white/5 relative z-10">
+                                 <div className="space-y-2">
+                                    <p className="text-[7px] text-white/20 uppercase font-black tracking-widest">CANTIDAD</p>
+                                    <p className="text-lg font-black text-white">{detailData.cantidad} <span className="text-[9px] opacity-40">UNID.</span></p>
                                  </div>
-                                 <div className="space-y-1">
-                                    <p className="text-[6px] text-gray-700 uppercase font-black">TAMAÑO</p>
-                                    <div className="flex items-center gap-2 text-white">
-                                       <span className="text-[9px] font-bold">{selectedProduct.escala_tamano || 'MEDIANO'}</span>
-                                    </div>
+                                 <div className="space-y-2">
+                                    <p className="text-[7px] text-white/20 uppercase font-black tracking-widest">TAMAÑO</p>
+                                    <p className="text-lg font-black text-white uppercase">{selectedProduct.escala_tamano || 'MEDIANO'}</p>
                                  </div>
-                                 <div className="space-y-1">
-                                    <p className="text-[6px] text-gray-700 uppercase font-black">MEDIDA</p>
-                                    <div className="flex items-center gap-2 text-white">
-                                       <span className="text-[9px] font-bold">{selectedProduct.valor_medida} {selectedProduct.detalle_unidad}</span>
-                                    </div>
+                                 <div className="space-y-2">
+                                    <p className="text-[7px] text-white/20 uppercase font-black tracking-widest">MEDIDA</p>
+                                    <p className="text-lg font-black text-white">{selectedProduct.valor_medida} <span className="text-[9px] opacity-40">{selectedProduct.detalle_unidad}</span></p>
                                  </div>
-                                 <div className="space-y-1">
-                                    <p className="text-[6px] text-gray-700 uppercase font-black">PLAZO</p>
-                                    <div className="flex items-center gap-2 text-gold-400">
-                                       <span className="text-[9px] font-black">{detailData.plazoDias} DÍAS</span>
-                                    </div>
+                                 <div className="space-y-2">
+                                    <p className="text-[7px] text-gold-400 uppercase font-black tracking-widest">PLAZO</p>
+                                    <p className="text-lg font-black text-gold-400">{detailData.plazoDias} <span className="text-[9px] opacity-40">DÍAS</span></p>
                                  </div>
                               </div>
 
-                              <div className="pt-6 border-t border-white/5 flex justify-between items-center relative z-10">
-                                 <div className="space-y-1">
-                                    <p className="text-[6px] text-gray-700 uppercase font-black">DÉBITO TOTAL</p>
-                                    <p className="text-xl font-mono font-black text-gold-400">{Math.round(detailData.totalOperacion).toLocaleString()} GP</p>
+                              <div className="pt-10 border-t border-white/5 flex justify-between items-end relative z-10">
+                                 <div className="space-y-2">
+                                    <p className="text-[7px] text-white/20 uppercase font-black tracking-widest">DÉBITO TOTAL EN BÓVEDA</p>
+                                    <p className="text-4xl font-light text-gold-400 tracking-tighter">{Math.round(detailData.totalOperacion).toLocaleString()} <span className="text-sm">GP</span></p>
                                  </div>
-                                 <div className="text-right space-y-1">
-                                    <p className="text-[6px] text-green-500 uppercase font-black">AHORRO_PROYECTADO</p>
-                                    <p className="text-lg font-mono font-bold text-green-500">RD$ {Math.round(detailData.ahorroTotalEstimated).toLocaleString()}</p>
+                                 <div className="text-right space-y-2">
+                                    <p className="text-[7px] text-green-500 uppercase font-black tracking-widest">AHORRO_PROYECTADO_RD</p>
+                                    <p className="text-3xl font-light text-green-500 tracking-tighter">RD$ {Math.round(detailData.ahorroTotalEstimated).toLocaleString()}</p>
                                  </div>
                               </div>
                            </div>
 
-                           <div className="pt-10">
-                              <button onClick={() => { setSelectedProduct(null); setTransactionSuccess(false); navigate('/dashboard'); }} className="w-full py-6 bg-white text-black font-black uppercase tracking-[0.4em] text-[10px] rounded-none shadow-2xl active:scale-95 transition-all">REGRESAR A BÓVEDA</button>
+                           <div className="pt-12">
+                              <button onClick={() => { setSelectedProduct(null); setTransactionSuccess(false); navigate('/dashboard'); }} className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.6em] text-[11px] rounded-none shadow-2xl active:scale-95 transition-all duration-500 hover:bg-gold-400">REGRESAR_A_BÓVEDA_CENTRAL</button>
                            </div>
                         </div>
-                      ) : (
-                        <div className="space-y-10">
-                            {/* CABECERA: NOMBRE Y TEXTO SECUNDARIO SEPARADOS */}
-                            <div className="space-y-1">
-                                {(() => {
-                                    const { main, sub } = formatProductName(selectedProduct.name);
-                                    return (
-                                        <>
-                                            <h2 className="font-heading text-3xl md:text-5xl text-white uppercase tracking-tighter leading-none font-normal">
-                                                {main}
-                                            </h2>
-                                            {sub && <p className="text-sm md:text-base font-bold text-gray-600 uppercase tracking-widest italic">{sub}</p>}
-                                        </>
-                                    );
-                                })()}
+                      )}
+
+                      {(!loading && !transactionSuccess && !existingFreeze) && (
+                        <div className="space-y-16">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4 opacity-20">
+                                    <div className="w-8 h-[1px] bg-white"></div>
+                                    <span className="text-[8px] font-black uppercase tracking-[0.6em]">ESPECIFICACIONES_DEL_ACTIVO</span>
+                                </div>
+                                <p className="text-lg text-white/40 font-light leading-relaxed max-w-2xl">
+                                    {selectedProduct.descripcion || "Este activo cumple con los protocolos de calidad y seguridad del ecosistema Golden Socio."}
+                                </p>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 opacity-30">
-                                    <span className="text-[7px] font-black uppercase tracking-[0.4em]">Descripción del Producto</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 border-y border-white/5 py-16">
+                                <div className="space-y-8">
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] text-white/20 font-black uppercase tracking-[0.6em]">VALOR_CONGELADO_UNITARIO</p>
+                                        <div className="flex items-baseline gap-4">
+                                            <span className={`text-7xl font-light tracking-tighter ${detailData.themeColor}`}>
+                                                {Math.round(detailData.precioCongeladoUnitario || 0).toLocaleString()}
+                                            </span>
+                                            <span className="text-xl text-white/20 font-light uppercase">GP</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="space-y-1">
+                                            <p className="text-[7px] text-white/10 uppercase tracking-widest font-black">PRECIO_MERCADO</p>
+                                            <p className="text-xl font-light text-white/10 line-through">RD$ {(detailData.precioMercadoUnitario || 0).toLocaleString()}</p>
+                                        </div>
+                                        <div className="px-4 py-1.5 bg-green-500/10 border border-green-500/20 text-green-500 text-[9px] font-black uppercase tracking-widest">
+                                            AHORRO_{detailData.ahorroPct}%
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="relative">
-                                    <p className={`text-[12px] text-gray-400 font-light leading-relaxed transition-all ${!descExpanded ? 'line-clamp-2' : ''}`}>
-                                        {selectedProduct.descripcion || "Este producto cumple con los estándares de calidad del ecosistema Golden."}
-                                    </p>
-                                    {(selectedProduct.descripcion?.length > 100) && (
-                                        <button 
-                                            onClick={() => setDescExpanded(!descExpanded)}
-                                            className="mt-2 text-gold-400 text-[8px] font-bold uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors"
-                                        >
-                                            {descExpanded ? 'Cerrar' : 'Ver más'}
-                                            <ChevronRight size={10} className={`transition-transform ${descExpanded ? '-rotate-90' : 'rotate-90'}`} />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
 
-                            <div className="flex justify-between items-center border-y border-white/5 py-8">
-                                <div className="flex items-center gap-6">
-                                   <div>
-                                      <p className="text-[7px] text-gray-600 font-normal uppercase tracking-[0.4em] mb-1">DÉBITO_UNITARIO</p>
-                                      <div className="flex items-baseline gap-2">
-                                         <span className={`text-4xl md:text-5xl font-heading font-normal tracking-tighter ${detailData.themeColor}`}>
-                                            {Math.round(detailData.precioCongeladoUnitario || 0).toLocaleString()}
-                                         </span>
-                                         <span className="text-sm text-gray-700 font-bold uppercase">GP</span>
-                                      </div>
-                                   </div>
-                                   <div className="h-10 w-[1px] bg-white/5"></div>
-                                   <div>
-                                      <p className="text-[7px] text-gray-700 uppercase mb-1 tracking-widest font-normal italic">PRECIO_LIBRE</p>
-                                      <p className="text-lg font-mono text-white/10 line-through font-normal">RD$ {(detailData.precioMercadoUnitario || 0).toLocaleString()}</p>
-                                   </div>
-                                </div>
-                                <div className="text-right">
-                                   <p className="text-[8px] text-green-500 font-bold uppercase bg-green-500/10 px-3 py-1 rounded-none border border-green-500/20">AHORRO_{detailData.ahorroPct}%</p>
-                                </div>
-                            </div>
+                                <div className="space-y-10">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.6em]">CANTIDAD_ADQUISICIÓN</span>
+                                            <span className="text-xl font-light text-white tracking-tighter">{quantity} UNIDADES</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border border-white/10 bg-white/[0.01] p-1 h-14 rounded-none">
+                                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-14 h-full hover:bg-white/5 text-white/20 flex items-center justify-center transition-all active:scale-90"><Minus size={18} strokeWidth={1.5}/></button>
+                                            <div className="h-6 w-[1px] bg-white/5"></div>
+                                            <button onClick={() => quantity < (selectedProduct.stock_disponible || 99) && setQuantity(quantity + 1)} className="w-14 h-full hover:bg-white/5 text-white/20 flex items-center justify-center transition-all active:scale-90"><Plus size={18} strokeWidth={1.5}/></button>
+                                        </div>
+                                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="flex items-center justify-between gap-4">
-                                   <span className="text-[8px] font-normal text-gray-600 uppercase tracking-[0.4em] shrink-0">CANTIDAD</span>
-                                   <div className="flex items-center justify-between border border-white/10 bg-white/[0.02] p-1 h-12 rounded-none flex-1">
-                                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full hover:bg-white/5 text-white/20 flex items-center justify-center transition-colors active:scale-90"><Minus size={14}/></button>
-                                      <span className="text-lg font-mono font-bold text-white">{quantity}</span>
-                                      <button onClick={() => quantity < (selectedProduct.stock_disponible || 99) && setQuantity(quantity + 1)} className="w-10 h-full hover:bg-white/5 text-white/20 flex items-center justify-center transition-colors active:scale-90"><Plus size={14}/></button>
-                                   </div>
-                                </div>
-                                <div className="flex items-center justify-between gap-4">
-                                   <span className="text-[8px] font-normal text-gray-600 uppercase tracking-[0.4em] shrink-0">PLAZO</span>
-                                   <div className="h-20 flex flex-col justify-center px-4 bg-white/[0.02] border border-white/10 rounded-none flex-1">
-                                      <input type="range" min="0" max="4" step="1" value={stepIndex} onChange={(e) => setStepIndex(parseInt(e.target.value))} className="w-full h-1 bg-white/10 appearance-none accent-gold-400 cursor-pointer" />
-                                      <div className="flex justify-between mt-3 text-[7px] text-gray-500 font-bold uppercase tracking-widest">
-                                         {STEPS.map(s => <span key={s} className={waitDays === s ? 'text-gold-400 scale-110' : ''}>{s}D</span>)}
-                                      </div>
-                                   </div>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.6em]">PLAZO_DE_CONGELACIÓN</span>
+                                            <span className="text-xl font-light text-gold-400 tracking-tighter">{waitDays} DÍAS</span>
+                                        </div>
+                                        <div className="h-20 flex flex-col justify-center px-6 bg-white/[0.01] border border-white/10 rounded-none">
+                                            <input type="range" min="0" max="4" step="1" value={stepIndex} onChange={(e) => setStepIndex(parseInt(e.target.value))} className="w-full h-1 bg-white/10 appearance-none accent-gold-400 cursor-pointer" />
+                                            <div className="flex justify-between mt-4 text-[8px] text-white/10 font-black uppercase tracking-widest">
+                                                {STEPS.map(s => <span key={s} className={waitDays === s ? 'text-gold-400' : ''}>{s}D</span>)}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="pt-6 space-y-8">
-                                <div className="p-8 bg-white/[0.01] border border-white/5 rounded-none space-y-6 shadow-inner">
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-[8px] text-gray-600 font-normal uppercase tracking-[0.4em]">DÉBITO_TOTAL_GP</p>
-                                        <p className="text-3xl font-mono font-bold text-white">{Math.round(detailData.totalOperacion || 0).toLocaleString()}</p>
+                            <div className="pt-8 space-y-12">
+                                <div className="p-12 bg-white/[0.01] border border-white/5 rounded-none space-y-8 shadow-2xl">
+                                    <div className="flex justify-between items-end">
+                                        <p className="text-[9px] text-white/20 font-black uppercase tracking-[0.8em]">DÉBITO_TOTAL_EN_BÓVEDA</p>
+                                        <p className="text-5xl font-light text-white tracking-tighter leading-none">{Math.round(detailData.totalOperacion || 0).toLocaleString()} <span className="text-lg">GP</span></p>
                                     </div>
                                     <div className="h-[1px] bg-white/5"></div>
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-[8px] text-green-500 font-normal uppercase tracking-[0.4em]">AHORRO_CONSOLIDADO</p>
-                                        <p className="text-2xl font-mono font-bold text-green-500">+ {Math.round(detailData.ahorroTotalEstimated || 0).toLocaleString()}</p>
+                                    <div className="flex justify-between items-end">
+                                        <p className="text-[9px] text-green-500 font-black uppercase tracking-[0.8em]">AHORRO_CONSOLIDADO_ESTIMADO</p>
+                                        <p className="text-4xl font-light text-green-500 tracking-tighter leading-none">+ RD$ {Math.round(detailData.ahorroTotalEstimated || 0).toLocaleString()}</p>
                                     </div>
                                 </div>
                                 
                                 {errorFeedback && (
-                                  <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-none flex items-start gap-4 animate-shake text-left">
-                                     <AlertTriangle size={20} className="text-red-500 shrink-0 mt-1" />
+                                  <div className="p-8 bg-red-500/5 border border-red-500/20 rounded-none flex items-start gap-6 animate-shake">
+                                     <AlertTriangle size={24} strokeWidth={1.5} className="text-red-500 shrink-0 mt-1" />
                                      <div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-red-500 leading-tight">RECHAZO_DE_SISTEMA</p>
-                                        <p className="text-[8px] text-red-500/70 uppercase mt-1 leading-relaxed">{errorFeedback}</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-red-500 leading-tight">RECHAZO_DE_PROTOCOLO</p>
+                                        <p className="text-[9px] text-red-500/60 uppercase mt-2 leading-relaxed tracking-widest">{errorFeedback}</p>
                                      </div>
                                   </div>
                                 )}
 
-                                {(() => {
-                                    const hasMembership = user?.membership_tier && user.membership_tier.toLowerCase() !== 'free';
-                                    const hasBalance = (user?.points_balance || 0) >= (detailData?.totalOperacion || 0);
-                                    const isOutOfStock = detailData?.isOutOfStock;
+                                <div className="space-y-6">
+                                    <button 
+                                      onClick={() => setShowConfirmModal(true)} 
+                                      disabled={isProcessing || detailData.isOutOfStock || existingFreeze || !user?.membership_tier || (user?.points_balance || 0) < (detailData?.totalOperacion || 0)} 
+                                      className={`w-full py-8 font-black uppercase tracking-[0.8em] text-[11px] transition-all duration-500 flex items-center justify-center gap-6 active:scale-95 rounded-none shadow-2xl ${
+                                        isProcessing || detailData.isOutOfStock || existingFreeze || !user?.membership_tier || (user?.points_balance || 0) < (detailData?.totalOperacion || 0)
+                                        ? "bg-white/5 text-white/20 border border-white/10 cursor-not-allowed"
+                                        : "bg-white text-black hover:bg-gold-400"
+                                      }`}
+                                    >
+                                       {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <><Lock size={20} /> ACTIVAR_PROTECCIÓN</>}
+                                    </button>
                                     
-                                    let btnLabel = <><Lock size={18} /> ACTIVAR PROTECCIÓN</>;
-                                    let isDisabled = isProcessing || isOutOfStock || existingFreeze;
-                                    let finalBtnStyle = detailData?.btnStyle;
-
-                                    if (isProcessing) {
-                                        btnLabel = <Loader2 size={20} className="animate-spin" />;
-                                    } else if (isOutOfStock) {
-                                        btnLabel = <>SIN STOCK</>;
-                                    } else if (!hasMembership) {
-                                        isDisabled = true;
-                                        btnLabel = <>REQUIERE MEMBRESÍA</>;
-                                        finalBtnStyle = "bg-red-500/10 border border-red-500/40 text-red-500";
-                                    } else if (!hasBalance) {
-                                        isDisabled = true;
-                                        btnLabel = <>SALDO INSUFICIENTE</>;
-                                        finalBtnStyle = "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50";
-                                    }
-
-                                    return (
-                                        <div className="space-y-4">
-                                            <button 
-                                              onClick={() => setShowConfirmModal(true)} 
-                                              disabled={isDisabled} 
-                                              className={`w-full py-6 font-normal uppercase tracking-[0.6em] text-[11px] transition-all duration-500 flex items-center justify-center gap-4 active:scale-95 rounded-none shadow-md ${finalBtnStyle}`}
-                                            >
-                                               {btnLabel}
-                                            </button>
-                                            
-                                            {(!hasBalance && hasMembership && !isProcessing) && (
-                                                <button 
-                                                  onClick={() => navigate('/wallet')}
-                                                  className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.3em] transition-all flex items-center justify-center gap-4 active:scale-95 shadow-md rounded-none"
-                                                >
-                                                  RECARGAR SALDO
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })()}
-                                <p className="text-center text-[7px] text-gray-800 uppercase tracking-[0.4em] font-bold leading-loose px-8">Al confirmar, el Nodo Maestro debitará el saldo necesario y blindará el activo automáticamente.</p>
+                                    {((user?.points_balance || 0) < (detailData?.totalOperacion || 0) && !isProcessing) && (
+                                        <button 
+                                          onClick={() => navigate('/wallet')}
+                                          className="w-full py-6 bg-white/[0.02] border border-white/10 text-white font-black uppercase text-[10px] tracking-[0.5em] transition-all duration-500 flex items-center justify-center gap-4 hover:bg-white hover:text-black active:scale-95 shadow-xl rounded-none"
+                                        >
+                                          RECARGAR_BÓVEDA_CENTRAL
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="text-center text-[8px] text-white/10 uppercase tracking-[0.6em] font-black leading-loose px-12">Al ejecutar esta acción, el Nodo Maestro debitará el saldo y blindará el activo bajo los términos del contrato inteligente.</p>
                             </div>
                         </div>
                       )}
-                  </div>
-              </div>
-          </div>
+                    </div>
+                </div>
+            </div>
+          </>
+      )}
 
-          {showConfirmModal && (
+      {showConfirmModal && (
             <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in">
               <div className="bg-[#0A0A0A] border border-gold-400/30 w-full max-w-md p-6 md:p-8 space-y-6 shadow-[0_0_80px_rgba(212,175,55,0.15)] relative">
                 <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none"><ShieldCheck size={100} /></div>
@@ -674,9 +642,7 @@ export const Market: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
-        </>
-      )}
+        )}
     </div>
   );
 };

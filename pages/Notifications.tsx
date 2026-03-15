@@ -47,7 +47,7 @@ export const NotificationsPage: React.FC = () => {
       switch(type) {
           case 'order': return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
           case 'promo': return 'bg-gold-100 text-gold-600 dark:bg-gold-900/20 dark:text-gold-400';
-          case 'system': return 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300';
+          case 'system': return 'bg-gray-100 text-gray-600 dark:bg-black/10 dark:bg-white/10 dark:text-gray-300';
           default: return 'bg-gray-100 text-gray-600';
       }
   };
@@ -60,23 +60,23 @@ export const NotificationsPage: React.FC = () => {
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 py-8 pb-32">
         <div className="flex items-center gap-4 mb-8">
-            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors">
-                <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
+            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-full bg-black/5 dark:bg-white/50 dark:bg-black/5 dark:bg-white/5 hover:bg-black dark:hover:bg-white/10 dark:bg-white/10 transition-colors">
+                <ArrowLeft size={20} className="text-gray-900 dark:text-black dark:text-white" />
             </button>
-            <h1 className="font-heading text-2xl font-light text-gray-900 dark:text-white">Centro de Mensajes</h1>
+            <h1 className="font-heading text-2xl font-light text-gray-900 dark:text-black dark:text-white">Centro de Mensajes</h1>
         </div>
 
         {/* Filters */}
         <div className="flex gap-4 mb-8">
             <button 
                 onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${filter === 'all' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-white/50 dark:bg-white/5 text-gray-500'}`}
+                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${filter === 'all' ? 'bg-white dark:bg-black dark:bg-black dark:bg-white text-white dark:text-black dark:text-white dark:text-black' : 'bg-black/5 dark:bg-white/50 dark:bg-black/5 dark:bg-white/5 text-gray-500'}`}
             >
                 Todos
             </button>
             <button 
                 onClick={() => setFilter('unread')}
-                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${filter === 'unread' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-white/50 dark:bg-white/5 text-gray-500'}`}
+                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${filter === 'unread' ? 'bg-white dark:bg-black dark:bg-black dark:bg-white text-white dark:text-black dark:text-white dark:text-black' : 'bg-black/5 dark:bg-white/50 dark:bg-black/5 dark:bg-white/5 text-gray-500'}`}
             >
                 No leídos
             </button>
@@ -97,7 +97,7 @@ export const NotificationsPage: React.FC = () => {
                     <div 
                         key={notif.id} 
                         onClick={() => handleMarkAsRead(notif.id, notif.action_url)}
-                        className={`glass-panel p-5 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.01] ${notif.read ? 'bg-white/40 dark:bg-white/5 border-transparent opacity-80' : 'bg-white dark:bg-white/10 border-gold-400/30 shadow-lg'}`}
+                        className={`glass-panel p-5 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.01] ${notif.read ? 'bg-white/40 dark:bg-black/5 dark:bg-white/5 border-transparent opacity-80' : 'bg-white dark:bg-black/10 dark:bg-white/10 border-gold-400/30 shadow-lg'}`}
                     >
                         <div className="flex gap-4">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getColor(notif.type)}`}>
@@ -105,7 +105,7 @@ export const NotificationsPage: React.FC = () => {
                             </div>
                             <div className="flex-1">
                                 <div className="flex justify-between items-start mb-1">
-                                    <h3 className={`font-bold text-sm ${notif.read ? 'text-gray-700 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                    <h3 className={`font-bold text-sm ${notif.read ? 'text-gray-700 dark:text-gray-400' : 'text-gray-900 dark:text-black dark:text-white'}`}>
                                         {notif.title}
                                     </h3>
                                     {!notif.read && <span className="w-2 h-2 rounded-full bg-red-500"></span>}

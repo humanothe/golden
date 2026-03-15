@@ -5,7 +5,7 @@ import {
   Snowflake, Clock, Search, Loader2, Package,
   Calendar, ShieldCheck, Banknote, ArrowRight, AlertCircle,
   ChevronRight, Info, Truck, X, Hash, MapPin, User as UserIcon, Settings, MessageSquare, MessageCircle,
-  CheckCircle2, History, Inbox, ShoppingBag, Map as MapIcon, Phone, Home, Building, Lock, Star, Activity
+  CheckCircle2, History, Inbox, ShoppingBag, Phone, Home, Building, Lock, Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -89,205 +89,39 @@ const RatingModal = ({
   );
 };
 
-const DeliveryStories = ({ requests, onStoryClick }: { requests: any[], onStoryClick: (req: any) => void }) => {
-  if (requests.length === 0) return null;
-
+const FloatingDeliveryBar = ({ request, onClick }: { request: any, onClick: () => void }) => {
   return (
-    <div className="w-full space-y-3 mb-6 px-8 relative z-20">
-      <p className="text-[6px] text-gold-400 font-black uppercase tracking-[0.6em] opacity-60 ml-1">ASIGNADOS</p>
-      <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
-        {requests.map((req, idx) => (
+    <motion.div 
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      onClick={onClick}
+      className="bg-blue-600 text-white p-3 rounded-2xl shadow-[0_20px_40px_rgba(37,99,235,0.4)] border border-white/20 flex items-center justify-between cursor-pointer group backdrop-blur-md pointer-events-auto"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 shrink-0">
           <motion.div
-            key={req.id_pedido_maestro || idx}
-            initial={{ scale: 0.8, opacity: 0, y: 10 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            whileHover={{ y: -3 }}
-            onClick={() => onStoryClick(req)}
-            className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group"
+            animate={{ x: [0, 3, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
           >
-            <div className="relative">
-              {/* Intense Floating Glow */}
-              <div className="absolute inset-[-6px] rounded-full bg-blue-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-              
-              <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-blue-600 via-blue-400 to-white/40 relative z-10 group-hover:from-gold-400 group-hover:to-white transition-all duration-700 shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
-                <div className="w-full h-full rounded-full border-[3px] border-black overflow-hidden bg-black flex items-center justify-center aspect-square">
-                  {req.foto_repartidor ? (
-                    <img src={req.foto_repartidor} alt={req.nombre_repartidor} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-                  ) : (
-                    <UserIcon size={24} className="text-white/10" />
-                  )}
-                </div>
-              </div>
-              
-              {/* Floating Status Indicator */}
-              <div className="absolute bottom-0 right-0 w-5 h-5 bg-blue-600 rounded-full border-[2px] border-black flex items-center justify-center shadow-2xl z-20 group-hover:bg-gold-400 group-hover:scale-110 transition-all duration-500">
-                <Truck size={10} className="text-white group-hover:text-black" />
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center space-y-0.5">
-              <span className="text-[7px] font-black text-white uppercase tracking-[0.1em] group-hover:text-gold-400 transition-colors truncate max-w-[60px]">
-                {req.nombre_repartidor?.split(' ')[0] || 'OPERADOR'}
-              </span>
-              <div className="flex items-center gap-1">
-                <div className="w-0.5 h-0.5 rounded-full bg-blue-400 animate-pulse"></div>
-                <span className="text-[5px] font-black text-blue-400/80 uppercase tracking-[0.2em]">EN RUTA</span>
-              </div>
-            </div>
+            <Truck size={22} className="text-white" />
           </motion.div>
-        ))}
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[7px] font-black uppercase tracking-[0.4em] text-white/50 mb-0.5">LOGÍSTICA_EN_MOVIMIENTO</span>
+          <h4 className="text-[10px] font-black uppercase tracking-tight leading-tight">
+            PEDIDO EN CAMINO <span className="text-white/40 mx-1">•</span> {request.nombre_repartidor || 'REPARTIDOR'}
+          </h4>
+        </div>
       </div>
-    </div>
-  );
-};
-
-const DeliverySidebar = ({ 
-  request, 
-  isOpen, 
-  onClose,
-  onRefresh,
-  onReceiveOrder,
-  pinRevealed
-}: { 
-  request: any, 
-  isOpen: boolean, 
-  onClose: () => void,
-  onRefresh: () => void,
-  onReceiveOrder: () => void,
-  pinRevealed: boolean
-}) => {
-  if (!request) return null;
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
-          />
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-[#050505] border-l border-white/10 z-[210] shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col"
-          >
-            <div className="p-8 flex-1 overflow-y-auto no-scrollbar space-y-10">
-              <div className="flex justify-between items-center">
-                <p className="text-[8px] text-gold-400 font-black uppercase tracking-[0.5em]">DETALLES_ENTREGA</p>
-                <button onClick={onClose} className="text-white/20 hover:text-white transition-colors">
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-                    {request.foto_repartidor ? (
-                      <img src={request.foto_repartidor} alt={request.nombre_repartidor} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/10">
-                        <UserIcon size={40} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
-                      {request.nombre_repartidor || 'REPARTIDOR'}
-                    </h3>
-                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">OPERADOR_EN_RUTA</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <a 
-                    href={`tel:${request.telefono_repartidor}`}
-                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
-                  >
-                    <Phone size={20} className="text-white/40 group-hover:text-blue-400 transition-colors" />
-                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">LLAMAR</span>
-                  </a>
-                  <a 
-                    href={`https://wa.me/${request.telefono_repartidor?.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
-                  >
-                    <MessageCircle size={20} className="text-white/40 group-hover:text-[#25D366] transition-colors" />
-                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">WHATSAPP</span>
-                  </a>
-                  <button 
-                    className="flex flex-col items-center gap-3 p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group"
-                  >
-                    <MessageSquare size={20} className="text-white/40 group-hover:text-gold-400 transition-colors" />
-                    <span className="text-[7px] font-black uppercase tracking-widest text-white/20 group-hover:text-white transition-colors">CHAT</span>
-                  </button>
-                </div>
-
-                <div className="p-8 bg-blue-600/10 border border-blue-500/20 rounded-3xl space-y-6">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <p className="text-[8px] text-blue-400 font-black uppercase tracking-widest">ESTADO_ACTUAL</p>
-                      <p className="text-lg font-black text-white uppercase tracking-tight">EN CAMINO</p>
-                    </div>
-                    <Truck className="text-blue-400 animate-pulse" size={24} />
-                  </div>
-                  
-                  {request.token_entrega && (
-                    <div className="pt-6 border-t border-white/10 space-y-4">
-                      <p className="text-[8px] text-white/40 font-black uppercase tracking-widest">TOKEN_DE_ENTREGA</p>
-                      {pinRevealed ? (
-                        <p className="text-5xl font-mono font-black text-white tracking-[0.2em]">{request.token_entrega}</p>
-                      ) : (
-                        <div className="space-y-4">
-                          <p className="text-3xl font-mono font-black text-white/20 tracking-[0.2em] blur-[4px]">••••••</p>
-                          <button 
-                            onClick={onReceiveOrder}
-                            className="w-full py-4 bg-gold-400 text-black font-black text-[10px] uppercase tracking-[0.4em] rounded-xl hover:bg-white transition-all active:scale-95"
-                          >
-                            RECIBIR_Y_REVELAR_PIN
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                   <p className="text-[8px] text-white/20 font-black uppercase tracking-widest">DETALLES_DEL_PEDIDO</p>
-                   <div className="space-y-3">
-                     {request.productos_ids?.map((p: any, idx: number) => (
-                       <div key={idx} className="flex items-center gap-4 p-4 bg-white/[0.01] border border-white/5 rounded-xl">
-                         <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                           {p.url_imagen ? <img src={p.url_imagen} className="w-full h-full object-cover" /> : <Package size={16} />}
-                         </div>
-                         <div className="flex-1">
-                           <p className="text-[10px] font-black text-white uppercase truncate">{p.nombre_producto}</p>
-                           <p className="text-[8px] text-white/30 uppercase">{p.cantidad} UNIDADES</p>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-8 border-t border-white/10">
-              <button 
-                onClick={onClose}
-                className="w-full py-5 bg-white text-black font-black text-[10px] uppercase tracking-[0.4em] hover:bg-gold-400 transition-all active:scale-95"
-              >
-                CERRAR_PANEL
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+      
+      <div className="flex items-center gap-4">
+        <div className="h-8 w-[1px] bg-white/10"></div>
+        <button className="px-5 py-2.5 bg-white text-blue-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg group-hover:bg-gold-400 group-hover:text-black transition-all active:scale-95">
+          VER
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
@@ -648,42 +482,22 @@ const AssetDetailModal = ({ asset, onClose, allRequests }: { asset: any, onClose
               </div>
 
               {isEnCamino && request && (
-                <div className="p-6 bg-blue-600 text-white space-y-6 shadow-[0_15px_30px_rgba(37,99,235,0.2)]">
-                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                <div className="p-6 bg-blue-600 text-white space-y-4 shadow-[0_15px_30px_rgba(37,99,235,0.2)]">
+                  <div className="flex justify-between items-center border-b border-white/20 pb-3">
                     <div className="flex items-center gap-2">
                       <Lock size={14} />
                       <p className="text-[9px] font-black uppercase tracking-[0.3em]">TOKEN_DE_ENTREGA</p>
                     </div>
                     <p className="text-2xl font-mono font-black tracking-[0.2em]">{request.token_entrega}</p>
                   </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden border border-white/10">
-                      {request.foto_repartidor ? (
-                        <img src={request.foto_repartidor} alt="Repartidor" className="w-full h-full object-cover" />
-                      ) : (
-                        <UserIcon size={20} />
-                      )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/10 flex items-center justify-center rounded-lg">
+                      <Truck size={16} />
                     </div>
                     <div>
-                      <p className="text-[7px] opacity-60 font-black uppercase tracking-widest mb-1">OPERADOR_ASIGNADO</p>
-                      <p className="text-sm font-black uppercase tracking-tight">{request.nombre_repartidor || 'REPARTIDOR_GOLDEN'}</p>
+                      <p className="text-[7px] opacity-60 font-black uppercase tracking-widest">ESTADO_LOGÍSTICO</p>
+                      <p className="text-[10px] font-black uppercase tracking-tight">{request.driver_id ? 'OPERADOR EN RUTA' : 'ASIGNANDO TRANSPORTE...'}</p>
                     </div>
-                    {request.llamada_directa_activa && request.telefono_repartidor && (
-                      <a 
-                        href={`tel:${request.telefono_repartidor}`}
-                        className="ml-auto w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors"
-                      >
-                        <Phone size={16} />
-                      </a>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-2 opacity-60">
-                    <div className="w-6 h-6 bg-white/10 flex items-center justify-center rounded-lg">
-                      <Truck size={12} />
-                    </div>
-                    <p className="text-[9px] font-black uppercase tracking-widest">ESTADO: EN RUTA</p>
                   </div>
                 </div>
               )}
@@ -1081,7 +895,6 @@ export const Portfolio: React.FC = () => {
   const [isUserApproved, setIsUserApproved] = useState(false);
   const [lockedProductIds, setLockedProductIds] = useState<string[]>([]);
   const [deliveredProductIds, setDeliveredProductIds] = useState<string[]>([]);
-  const [selectedDeliveryForSidebar, setSelectedDeliveryForSidebar] = useState<any | null>(null);
   
   const subTabCounts = useMemo(() => {
     const counts = { todos: 0, en_proceso: 0, aprobado: 0, en_ruta: 0 };
@@ -1242,7 +1055,7 @@ export const Portfolio: React.FC = () => {
           chat_interno_activo, 
           llamada_directa_activa, 
           whatsapp_activo,
-          staff_credenciales!fk_entrega_operador_staff (
+          staff_credenciales (
             nombre_operador,
             foto_url,
             telefono_contacto
@@ -1368,18 +1181,18 @@ export const Portfolio: React.FC = () => {
 
     // LÓGICA DE PESTAÑAS (EL VIAJE DEL ACTIVO)
     if (activeTab === 'congelados') {
-      // CONGELADOS: Solo lo que aún está protegido (fecha de vencimiento no ha pasado)
-      // Y que no esté en proceso de entrega ni entregado
-      return matchesSearch && !isExpired && !isProcessing && !isDelivered;
+      // Se muestra si NO está vencido, NO ha sido entregado y NO está en proceso
+      return matchesSearch && !isExpired && !isDelivered && !isProcessing;
     }
     if (activeTab === 'disponibles') {
-      // DISPONIBLES: Lo que ya venció (liberado) O lo que está en proceso de entrega
-      // Siempre que no haya sido entregado definitivamente
+      // Se muestra si:
+      // 1. Está vencido y no entregado (disponible para solicitar)
+      // 2. O está en proceso de entrega (independientemente de si venció o no, ya es un activo "activo")
       const isAvailableOrActive = (isExpired || isProcessing) && !isDelivered;
       const baseMatch = matchesSearch && isAvailableOrActive;
       if (!baseMatch) return false;
 
-      // Filtro de sub-pestaña específico
+      // Filtro de sub-pestaña específico y excluyente
       switch (activeSubTab) {
         case 'en_proceso':
           return estadoSolicitud === 'pendiente';
@@ -1536,57 +1349,53 @@ export const Portfolio: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white relative font-heading overflow-hidden flex flex-col">
-      {/* ATMÓSFERA LUMÍNICA GLOBAL - REFERENCIA PANTALLA PERFIL (LIMPIA Y SUPERIOR) */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#050505]">
-          {/* Luz Superior Central - Estilo Perfil */}
-          <div className="absolute -top-[30%] left-1/2 -translate-x-1/2 w-[140vw] h-[80vh] opacity-60"
-               style={{ background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 70%)', filter: 'blur(140px)' }}></div>
+      {/* ATMÓSFERA LUMÍNICA GLOBAL - REFINADA */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Luz Blanca Limpia en la esquina superior izquierda */}
+          <div className="absolute -top-[10%] -left-[10%] w-[70vw] h-[60vh] opacity-30"
+               style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 70%)', filter: 'blur(100px)' }}></div>
           
-          {/* Luz Dorada Inferior muy sutil para profundidad */}
-          <div className="absolute -bottom-[40%] left-1/2 -translate-x-1/2 w-[120vw] h-[70vh] opacity-[0.2]"
-               style={{ background: 'radial-gradient(circle at 50% 100%, rgba(212,175,55,0.05) 0%, transparent 70%)', filter: 'blur(160px)' }}></div>
+          {/* Luz Dorada Sutil en la esquina inferior derecha */}
+          <div className="absolute bottom-0 right-0 w-[60vw] h-[50vh] opacity-[0.1]"
+               style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 70%)', filter: 'blur(120px)' }}></div>
+          
+          {/* Capa de profundidad */}
+          <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]"></div>
       </div>
 
       <div className={`relative z-10 flex-1 flex flex-col transition-all duration-1000 ${successMsg || errorMsg ? 'blur-3xl scale-95 opacity-0' : 'opacity-100'}`}>
-        <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 pt-10 md:pt-16 mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 pt-12 md:pt-20 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-1">
-            <p className="text-gold-400 text-[7px] font-black uppercase tracking-[0.6em] opacity-50">GESTIÓN_PATRIMONIAL</p>
-            <h1 className="font-heading text-xl md:text-2xl text-white uppercase tracking-tighter leading-none font-light">
+            <p className="text-gold-400 text-[8px] font-black uppercase tracking-[0.6em] opacity-50">GESTIÓN_PATRIMONIAL</p>
+            <h1 className="font-heading text-2xl md:text-3xl text-white uppercase tracking-tighter leading-none font-light">
               MI <span className="text-gold-metallic font-black">PORTAFOLIO</span>
             </h1>
           </div>
           <div className="relative w-full md:w-72 group">
-            <Search size={12} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold-400 transition-colors" />
+            <Search size={12} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-gold-400 transition-colors" />
             <input 
               type="text" placeholder="BUSCAR ACTIVOS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white/[0.03] py-3 pl-14 pr-6 text-[8px] uppercase tracking-[0.3em] outline-none focus:bg-white/[0.05] transition-all backdrop-blur-2xl font-black text-white rounded-xl"
+              className="w-full bg-white/[0.02] border border-white/5 py-3.5 pl-14 text-[8px] uppercase tracking-[0.3em] outline-none focus:border-gold-400/30 transition-all backdrop-blur-xl font-black text-white"
             />
           </div>
         </header>
 
-        {activeTab === 'disponibles' && activeSubTab !== 'en_ruta' && activeDeliveryRequests.length > 0 && (
-          <DeliveryStories 
-            requests={activeDeliveryRequests} 
-            onStoryClick={(req) => setSelectedDeliveryForSidebar(req)} 
-          />
-        )}
-
-        <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex justify-center gap-6 md:gap-10 mb-6 relative z-20">
+        <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex justify-center gap-6 md:gap-12 border-b border-white/5 mb-10">
           {(['congelados', 'disponibles', 'historial'] as const).map(tab => (
             <button 
               key={tab} onClick={() => { setActiveTab(tab); setSelectedIds([]); setActiveSubTab('todos'); }}
-              className={`pb-4 text-[7px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap relative ${activeTab === tab ? 'text-gold-400' : 'text-white/20 hover:text-white/40'}`}
+              className={`pb-5 text-[8px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap relative ${activeTab === tab ? 'text-gold-400' : 'text-white/20 hover:text-white/40'}`}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gold-400 shadow-[0_0_15px_rgba(212,175,55,0.6)]" />
+                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-[1px] bg-gold-400 shadow-[0_0_15px_rgba(212,175,55,0.6)]" />
               )}
             </button>
           ))}
         </div>
 
         {activeTab === 'disponibles' && (
-          <div className="flex justify-center gap-2 mb-6 -mt-2 px-4 items-center relative z-20">
+          <div className="flex justify-center gap-2 mb-10 -mt-4 px-4 items-center">
             {(['todos', 'en_proceso', 'aprobado', 'en_ruta'] as const).map(sub => {
               const count = subTabCounts[sub];
               const hasActivity = count > 0 && sub !== 'todos';
@@ -1594,7 +1403,7 @@ export const Portfolio: React.FC = () => {
               return (
                 <button 
                   key={sub} onClick={() => setActiveSubTab(sub)}
-                  className={`px-2 py-2 text-[6px] font-black uppercase tracking-[0.1em] transition-all border relative flex items-center justify-center min-w-[70px] md:min-w-[90px] whitespace-nowrap ${
+                  className={`px-2 py-3 text-[6.5px] font-black uppercase tracking-[0.1em] transition-all border relative flex items-center justify-center min-w-[75px] md:min-w-[100px] whitespace-nowrap ${
                     activeSubTab === sub 
                       ? 'bg-gold-400/10 border-gold-400/30 text-gold-400' 
                       : 'bg-white/[0.01] border-white/5 text-white/20 hover:text-white/40'
@@ -1604,9 +1413,9 @@ export const Portfolio: React.FC = () => {
                   {count > 0 && (
                     <motion.div 
                       initial={{ scale: 0 }} animate={{ scale: 1 }}
-                      className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-gold-400 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.5)] border border-black z-20"
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gold-400 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.5)] border border-black z-20"
                     >
-                      <span className="text-black text-[6px] font-black">{count}</span>
+                      <span className="text-black text-[7px] font-black">{count}</span>
                     </motion.div>
                   )}
                 </button>
@@ -1833,7 +1642,17 @@ export const Portfolio: React.FC = () => {
       </div>
 
       <AnimatePresence>
-        {/* Floating bars removed in favor of DeliveryStories */}
+        {activeDeliveryRequests.length > 0 && activeTab === 'disponibles' && activeSubTab !== 'en_ruta' && (
+          <div className="fixed bottom-24 left-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
+            {activeDeliveryRequests.map((req, idx) => (
+              <FloatingDeliveryBar 
+                key={req.id_pedido_maestro || idx}
+                request={req} 
+                onClick={() => setActiveSubTab('en_ruta')} 
+              />
+            ))}
+          </div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -1992,18 +1811,6 @@ export const Portfolio: React.FC = () => {
           />
         )}
       </AnimatePresence>
-
-      <DeliverySidebar 
-        request={selectedDeliveryForSidebar}
-        isOpen={!!selectedDeliveryForSidebar}
-        onClose={() => setSelectedDeliveryForSidebar(null)}
-        onRefresh={() => fetchAssets(true, true)}
-        onReceiveOrder={() => {
-          setRequestToRate(selectedDeliveryForSidebar);
-          setShowRatingModal(true);
-        }}
-        pinRevealed={pinRevealed}
-      />
     </div>
   );
 };

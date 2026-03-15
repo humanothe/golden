@@ -185,132 +185,161 @@ export const Dashboard: React.FC = () => {
       
       {/* ATMÓSFERA LUMÍNICA - HOME (Standard) */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-[80vw] h-[50vh] opacity-40"
-             style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
-        <div className="absolute bottom-0 right-0 w-[70vw] h-[60vh] opacity-[0.15]"
-             style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 60%)', filter: 'blur(100px)' }}></div>
+        <div className="absolute top-0 left-0 w-[100vw] h-[60vh] opacity-40"
+             style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 70%)', filter: 'blur(100px)' }}></div>
+        <div className="absolute bottom-0 right-0 w-[80vw] h-[70vh] opacity-[0.1]"
+             style={{ background: 'radial-gradient(circle at 100% 100%, #D4AF37 0%, transparent 60%)', filter: 'blur(120px)' }}></div>
       </div>
 
-      <header className="flex justify-start items-center mb-16 pt-8 px-2 max-w-[500px] mx-auto animate-fade-in relative z-10">
-        <div className="flex items-center gap-6">
-          <img src={masterLogo} className="h-14 md:h-16 w-auto object-contain" alt="Golden Logo" />
-          <div className="h-8 w-[1px] bg-white/10"></div>
-          <span className="text-[10px] font-normal text-white uppercase tracking-[0.6em]">Golden acceso</span>
+      <header className="relative z-10 pt-32 pb-20 px-10 max-w-[1400px] w-full mx-auto">
+        <div className="flex items-end justify-between">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 opacity-20">
+              <div className="w-8 h-[1px] bg-white"></div>
+              <p className="text-[8px] font-black text-white uppercase tracking-[0.8em]">CENTRAL_DE_MANDO</p>
+            </div>
+            <h1 className="text-8xl font-extralight text-white uppercase tracking-tighter leading-[0.8] flex flex-col">
+              GOLDEN <span className="font-black text-gold-400">SOCIO</span>
+            </h1>
+          </div>
+          <button onClick={() => navigate('/profile')} className="group flex flex-col items-end gap-3">
+            <div className="w-16 h-16 bg-white/[0.02] border border-white/10 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 shadow-2xl">
+              <User size={24} strokeWidth={1.5} />
+            </div>
+            <span className="text-[7px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-gold-400 transition-colors">ACCESO_PERFIL</span>
+          </button>
         </div>
       </header>
 
-      <div className="max-w-[500px] mx-auto space-y-8 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-10 relative z-10 space-y-32">
         
-        <div className="w-full animate-fade-in relative z-0 -mt-10">
-          <div className="relative aspect-[1.6/1] w-full bg-[#0a0a0a] rounded-[3rem] border border-white/10 overflow-hidden flex flex-col justify-between p-10 shadow-[0_0_50px_-10px_rgba(255,255,255,0.03)]">
-            <div className="absolute inset-0 z-0">
-               <div className="absolute inset-0 bg-gradient-to-tr from-black via-transparent to-white/[0.06]"></div>
-               <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/[0.03] blur-[60px] rounded-full"></div>
-            </div>
-            <div className="relative z-20 flex justify-end items-start">
-              <button onClick={startScanner} className="w-14 h-14 bg-white text-black rounded-2xl flex flex-col items-center justify-center active:scale-95 transition-all shadow-none">
-                  {isProcessing ? <Loader2 className="animate-spin" size={20} /> : <Camera size={18} />}
-                  <span className="text-[6px] font-bold uppercase mt-1.5 tracking-[0.2em]">ESC</span>
-              </button>
-            </div>
-            <div className="relative z-20 flex items-end justify-between w-full">
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <h2 className="text-5xl md:text-6xl font-heading font-normal text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                    {Math.round(pointsAvailable).toLocaleString()}
-                  </h2>
-                  <span className="text-xl font-heading font-normal text-gold-400">GP</span>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] text-white/50 font-normal uppercase tracking-[0.4em]">Golden puntos</p>
-                  <p className="text-[6px] text-gray-700 font-bold uppercase tracking-[0.5em]">Saldo disponible</p>
+        {/* BALANCE SECTION */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-end">
+          <div className="lg:col-span-7 space-y-12">
+            <div className="space-y-2">
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.6em]">SALDO_DISPONIBLE_BÓVEDA</p>
+              <div className="flex items-baseline gap-6">
+                <h2 className="text-[12rem] font-extralight text-white tracking-tighter leading-none">
+                  {Math.round(pointsAvailable).toLocaleString()}
+                </h2>
+                <div className="flex flex-col">
+                  <span className="text-3xl font-light text-gold-400 tracking-tight">GP</span>
+                  <span className="text-[8px] font-black text-white/10 uppercase tracking-widest">GOLDEN_POINTS</span>
                 </div>
               </div>
-              <button onClick={() => navigate('/profile')} className="w-14 h-14 bg-white text-black rounded-2xl flex flex-col items-center justify-center active:scale-95 transition-all shadow-none shrink-0">
-                  <User size={18} />
-                  <span className="text-[6px] font-bold uppercase mt-1.5 tracking-[0.2em]">VIP</span>
+            </div>
+            
+            <div className="flex gap-6 max-w-md">
+              <button 
+                onClick={startScanner}
+                className="flex-1 bg-white text-black py-7 rounded-none flex items-center justify-center gap-5 group hover:bg-gold-400 transition-all duration-500 active:scale-95 shadow-2xl"
+              >
+                {isProcessing ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} strokeWidth={1.5} />}
+                <span className="text-[10px] font-black uppercase tracking-[0.5em]">ESCANEAR_ID</span>
+              </button>
+              <button 
+                onClick={() => navigate('/wallet')}
+                className="w-24 bg-white/[0.02] border border-white/10 rounded-none flex items-center justify-center hover:bg-white hover:text-black transition-all duration-500 active:scale-95 shadow-xl"
+              >
+                <Plus size={28} strokeWidth={1.5} />
               </button>
             </div>
           </div>
-        </div>
 
-        <div className="w-full bg-black/40 rounded-[3rem] p-10 -mt-5">
-            <div className="grid grid-cols-2 gap-3 h-[200px]">
-                <button onClick={() => navigate('/market')} className="row-span-2 bg-gold-400 text-black rounded-[2.2rem] p-6 flex flex-col justify-between text-left group relative overflow-hidden active:scale-[0.98] transition-all shadow-md">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center">
-                        <ArrowUpRight size={20} strokeWidth={2} />
-                    </div>
-                    <div>
-                        <p className="text-[6px] font-bold uppercase tracking-[0.6em] text-black/40 mb-2">Protección Activa</p>
-                        <h3 className="text-2xl font-heading uppercase tracking-tighter leading-tight">
-                          <span className="font-medium">GOLDEN</span><br/>
-                          <span className="text-lg font-normal opacity-60">MARKET</span>
-                        </h3>
-                    </div>
-                </button>
+          <div className="lg:col-span-5 grid grid-cols-2 gap-8">
+            <button 
+              onClick={() => navigate('/market')}
+              className="group p-12 bg-white/[0.01] border border-white/5 rounded-none flex flex-col justify-between aspect-square hover:bg-white/[0.03] hover:border-gold-400/40 transition-all duration-700 text-left relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                <Store size={120} strokeWidth={1} />
+              </div>
+              <div className="w-14 h-14 rounded-none bg-gold-400 text-black flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-xl">
+                <ArrowUpRight size={28} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mb-3">ADQUISICIÓN</p>
+                <h3 className="text-3xl font-light text-white uppercase tracking-tighter leading-none">
+                  GOLDEN<br/><span className="font-black text-gold-400">MARKET</span>
+                </h3>
+              </div>
+            </button>
 
-                <button onClick={() => navigate('/partners')} className="bg-[#0e0e0e] border border-white/5 rounded-[2rem] p-6 flex flex-col justify-between text-left group active:scale-[0.96] transition-all hover:border-white/10">
-                    <Store size={18} className="text-white/60 group-hover:text-gold-400 transition-colors" />
-                    <div>
-                        <p className="text-[6px] font-bold uppercase tracking-[0.5em] text-gray-500 mb-1.5">Red_Global</p>
-                        <h4 className="text-[10px] font-heading font-black uppercase text-white tracking-[0.2em]">NEGOCIOS</h4>
-                    </div>
-                </button>
+            <button 
+              onClick={() => navigate('/partners')}
+              className="group p-12 bg-white/[0.01] border border-white/5 rounded-none flex flex-col justify-between aspect-square hover:bg-white/[0.03] transition-all duration-700 text-left relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                <Zap size={120} strokeWidth={1} />
+              </div>
+              <div className="w-14 h-14 rounded-none bg-white/5 border border-white/10 text-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 shadow-xl">
+                <Store size={28} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mb-3">RED_GLOBAL</p>
+                <h3 className="text-3xl font-light text-white uppercase tracking-tighter leading-none">
+                  NEGOCIOS<br/><span className="font-black opacity-20">ALIADOS</span>
+                </h3>
+              </div>
+            </button>
+          </div>
+        </section>
 
-                <button onClick={() => navigate('/wallet')} className="bg-[#0e0e0e] border border-white/5 rounded-[2rem] p-6 flex flex-col justify-between text-left group active:scale-[0.96] transition-all hover:border-white/10">
-                    <Plus size={20} className="text-white/60 group-hover:text-gold-400 transition-colors" />
-                    <div>
-                        <p className="text-[6px] font-bold uppercase tracking-[0.5em] text-gray-500 mb-1.5">Recuperación</p>
-                        <h4 className="text-[10px] font-heading font-black uppercase text-white tracking-[0.2em]">RECARGAR</h4>
-                    </div>
-                </button>
+        {/* ACTIVITY SECTION */}
+        <section className="pb-32">
+          <div className="flex items-center justify-between mb-16">
+            <div className="flex items-center gap-6">
+              <div className="w-12 h-[1px] bg-white/20"></div>
+              <span className="text-[10px] font-black uppercase tracking-[1em] text-white/40">ACTIVIDAD_RECIENTE</span>
             </div>
-        </div>
-
-        <div className="mt-16 pt-12 border-t border-white/5 animate-fade-in relative">
-           <div className="flex items-center justify-between mb-10 px-1">
-              <div className="flex items-center gap-3">
-                <History size={14} className="text-gold-400/40" />
-                <span className="text-[10px] font-normal uppercase tracking-[0.6em] text-white/40">Actividad reciente</span>
-              </div>
-              <button onClick={() => navigate('/history')} className="text-[8px] font-bold uppercase tracking-widest text-gold-400/60 hover:text-white transition-colors">Ver todo</button>
-           </div>
-           
-           {loadingHistory ? (
-              <div className="space-y-4">
-                {[1,2,3].map(i => <div key={i} className="h-20 w-full bg-white/[0.02] border border-white/5 animate-pulse"></div>)}
-              </div>
-           ) : (
-              <div className="space-y-4">
-                 {history.map((item) => (
-                   <div key={item.id} className="p-7 bg-white/[0.02] border border-white/5 flex items-center justify-between hover:bg-white/[0.05] transition-all cursor-default">
-                      <div className="flex items-center gap-6">
-                         <div className="text-white/20">{item.icon}</div>
-                         <div>
-                            <p className="text-[11px] font-heading font-normal text-white uppercase tracking-widest leading-none mb-2">{item.title}</p>
-                            <p className="text-[7px] text-gray-600 font-bold uppercase tracking-[0.4em]">
-                              {new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
-                            </p>
-                         </div>
-                      </div>
-                      <div className="text-right">
-                         <p className={`text-xl font-heading font-normal tracking-tight ${item.isNegative ? 'text-white/30' : 'text-green-500'}`}>
-                           {item.type !== 'market' && !item.isNegative ? '+' : ''}{item.value.toLocaleString()}
-                         </p>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-           )}
-        </div>
+            <button onClick={() => navigate('/history')} className="text-[9px] font-black text-gold-400 uppercase tracking-widest hover:text-white transition-all duration-500 border-b border-gold-400/20 pb-1">VER_HISTORIAL_COMPLETO</button>
+          </div>
+          
+          {loadingHistory ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1,2,3,4].map(i => <div key={i} className="h-32 w-full bg-white/[0.01] border border-white/5 rounded-none animate-pulse"></div>)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               {history.map((item) => (
+                 <div key={item.id} className="p-10 bg-white/[0.01] border border-white/5 rounded-none flex items-center justify-between hover:bg-white/[0.03] transition-all duration-500 group cursor-pointer">
+                    <div className="flex items-center gap-8">
+                       <div className="w-16 h-16 rounded-none bg-white/[0.02] border border-white/5 flex items-center justify-center text-white/20 group-hover:text-gold-400 group-hover:border-gold-400/30 transition-all duration-500">
+                        {React.cloneElement(item.icon as React.ReactElement, { size: 24, strokeWidth: 1.5 })}
+                       </div>
+                       <div>
+                          <p className="text-[12px] font-black text-white uppercase tracking-[0.15em] mb-2 group-hover:text-gold-400 transition-colors">{item.title}</p>
+                          <p className="text-[8px] text-white/20 font-black uppercase tracking-[0.5em]">
+                            {new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                          </p>
+                       </div>
+                    </div>
+                    <div className="text-right">
+                       <p className={`text-3xl font-light tracking-tighter ${item.isNegative ? 'text-white/20' : 'text-emerald-500'}`}>
+                         {item.type !== 'market' && !item.isNegative ? '+' : ''}{item.value.toLocaleString()}
+                       </p>
+                       <p className="text-[7px] font-black text-white/10 uppercase tracking-widest mt-1">GP_UNITS</p>
+                    </div>
+                 </div>
+               ))}
+            </div>
+          )}
+        </section>
       </div>
 
       {showScanner && (
         <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-6 animate-fade-in overflow-hidden">
-          <button onClick={() => stopScannerAction().then(() => setShowScanner(false))} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-8 p-3 bg-white/5 border border-white/10 rounded-full text-gold-400 z-[1010]"><X size={24} /></button>
-          <div className="relative w-full max-w-[400px] aspect-square mb-16 overflow-hidden border border-white/5 rounded-[3rem]">
-              <div id="reader" className="w-full h-full grayscale brightness-[0.7]"></div>
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] opacity-20"
+                 style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)', filter: 'blur(100px)' }}></div>
           </div>
+          <button onClick={() => stopScannerAction().then(() => setShowScanner(false))} className="absolute top-12 right-12 p-5 bg-white/5 border border-white/10 rounded-full text-gold-400 z-[1010] hover:bg-white hover:text-black transition-all duration-500 shadow-2xl"><X size={32} strokeWidth={1.5} /></button>
+          <div className="relative w-full max-w-[500px] aspect-square mb-20 overflow-hidden border border-white/10 rounded-none shadow-[0_0_100px_rgba(212,175,55,0.1)]">
+              <div id="reader" className="w-full h-full grayscale brightness-[0.6] contrast-[1.2]"></div>
+              <div className="absolute inset-0 border-[40px] border-black/60 pointer-events-none"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-gold-400/30"></div>
+          </div>
+          <p className="text-[10px] font-black text-gold-400 uppercase tracking-[1em] animate-pulse">Sincronizando Sensor Óptico</p>
         </div>
       )}
 

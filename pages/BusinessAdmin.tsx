@@ -219,7 +219,7 @@ export const BusinessAdmin: React.FC = () => {
                 <img src={configForm.logo_url} className="w-full h-full object-contain" />
               </div>
             ) : (
-              <div className="w-7 h-7 bg-black text-white rounded-md flex items-center justify-center font-black text-[9px] shrink-0">G</div>
+              <div className="w-7 h-7 bg-white dark:bg-black text-black dark:text-white rounded-md flex items-center justify-center font-black text-[9px] shrink-0">G</div>
             )}
             
             <div className="h-3 w-[1px] bg-gray-200"></div>
@@ -232,7 +232,7 @@ export const BusinessAdmin: React.FC = () => {
          <div className="px-4 md:px-8">
             <button 
               onClick={() => setActiveTab('config')} 
-              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${activeTab === 'config' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400 hover:text-gray-900'}`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${activeTab === 'config' ? 'bg-white dark:bg-black text-black dark:text-white' : 'bg-gray-100 text-gray-400 hover:text-gray-900'}`}
             >
               <Settings size={12} />
             </button>
@@ -244,7 +244,7 @@ export const BusinessAdmin: React.FC = () => {
           <div className="w-full max-w-[1000px] mx-auto">
               <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2 opacity-30">
-                    <div className="w-2 h-[1px] bg-black"></div>
+                    <div className="w-2 h-[1px] bg-white dark:bg-black"></div>
                     <span className="text-[7px] font-black uppercase tracking-[0.4em] text-black">NODO_COMERCIAL_ACTIVO</span>
                   </div>
                   <h2 className="text-xl md:text-2xl font-black uppercase text-gray-900 tracking-tight leading-none">
@@ -365,7 +365,7 @@ export const BusinessAdmin: React.FC = () => {
                        {logisticsRequests.length > 0 ? logisticsRequests.map((l, i) => (
                          <div key={i} className="p-4 bg-white border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 hover:bg-gray-50 hover:border-gray-200 transition-all group rounded-[1.5rem] shadow-sm">
                             <div className="flex items-center gap-4 min-w-[160px] w-full md:w-auto">
-                               <div className="w-8 h-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center transition-all duration-300 group-hover:bg-black group-hover:text-white">
+                               <div className="w-8 h-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center transition-all duration-300 group-hover:bg-black dark:hover:bg-white group-hover:text-black dark:group-hover:text-white">
                                  <Truck size={14} />
                                </div>
                                <div>
@@ -446,7 +446,7 @@ export const BusinessAdmin: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={handleUpdateConfig} disabled={loading} className="w-full py-4 bg-black text-white font-black uppercase text-[9px] tracking-[0.6em] flex items-center justify-center gap-4 hover:bg-gray-900 transition-all rounded-[1rem] active:scale-95 shadow-md">
+                            <button onClick={handleUpdateConfig} disabled={loading} className="w-full py-4 bg-white dark:bg-black text-black dark:text-white font-black uppercase text-[9px] tracking-[0.6em] flex items-center justify-center gap-4 hover:bg-gray-900 transition-all rounded-[1rem] active:scale-95 shadow-md">
                                 {loading ? <Loader2 className="animate-spin" size={16} /> : 'GUARDAR_CONFIGURACIÓN'}
                             </button>
                         </div>
@@ -477,14 +477,14 @@ export const BusinessAdmin: React.FC = () => {
                   {active && (
                     <motion.div 
                       layoutId="nav-active"
-                      className="absolute inset-0 bg-black rounded-[1.5rem] z-0"
+                      className="absolute inset-0 bg-white dark:bg-black rounded-[1.5rem] z-0"
                       transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
                     />
                   )}
-                  <div className={`relative z-10 transition-colors duration-300 ${active ? 'text-white' : 'text-gray-400 group-hover:text-gray-900'}`}>
+                  <div className={`relative z-10 transition-colors duration-300 ${active ? 'text-black dark:text-white' : 'text-gray-400 group-hover:text-gray-900'}`}>
                     <item.icon size={14} strokeWidth={active ? 2.5 : 1.5} />
                   </div>
-                  <span className={`relative z-10 text-[6px] font-black tracking-[0.05em] uppercase transition-colors duration-300 ${active ? 'text-white' : 'text-gray-400 group-hover:text-gray-900'} truncate px-1`}>
+                  <span className={`relative z-10 text-[6px] font-black tracking-[0.05em] uppercase transition-colors duration-300 ${active ? 'text-black dark:text-white' : 'text-gray-400 group-hover:text-gray-900'} truncate px-1`}>
                     {item.label}
                   </span>
                 </button>
@@ -529,7 +529,7 @@ export const BusinessAdmin: React.FC = () => {
                 </div>
               </div>
 
-              <button onClick={handleSaveStaff} className="w-full py-4 bg-black text-white font-black uppercase tracking-[0.4em] text-[10px] active:scale-95 transition-all rounded-2xl hover:bg-gray-900 shadow-lg">ACTIVAR_TERMINAL</button>
+              <button onClick={handleSaveStaff} className="w-full py-4 bg-white dark:bg-black text-black dark:text-white font-black uppercase tracking-[0.4em] text-[10px] active:scale-95 transition-all rounded-2xl hover:bg-gray-900 shadow-lg">ACTIVAR_TERMINAL</button>
            </div>
         </div>
       )}

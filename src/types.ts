@@ -162,8 +162,8 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: OrderStatus;
-  delivery_method: 'standard' | 'express';
-  payment_method: 'balance' | 'card';
+  delivery_method: 'standard' | 'express' | 'delivery';
+  payment_method: 'balance' | 'card' | 'points';
   created_at: string;
   driver_id?: string;
 }
