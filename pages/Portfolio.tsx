@@ -1100,13 +1100,13 @@ export const Portfolio: React.FC = () => {
 
       if (requestsWithMaestro) {
         const lockedIds = requestsWithMaestro
-          .filter(r => ['pendiente', 'preparando', 'listo', 'en_camino'].includes(r.estado_solicitud))
-          .flatMap(req => (req.productos_ids || []).map((p: any) => p.id || p));
+          .filter((r: any) => ['pendiente', 'preparando', 'listo', 'en_camino'].includes(r.estado_solicitud))
+          .flatMap((req: any) => (req.productos_ids || []).map((p: any) => p.id || p));
         setLockedProductIds(lockedIds);
 
         const deliveredIds = requestsWithMaestro
-          .filter(r => r.estado_solicitud === 'entregado')
-          .flatMap(req => (req.productos_ids || []).map((p: any) => p.id || p));
+          .filter((r: any) => r.estado_solicitud === 'entregado')
+          .flatMap((req: any) => (req.productos_ids || []).map((p: any) => p.id || p));
         setDeliveredProductIds(deliveredIds);
         // Cleanup selectedIds if any were delivered
         setSelectedIds(prev => prev.filter(id => !deliveredIds.includes(id)));
