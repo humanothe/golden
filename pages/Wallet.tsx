@@ -200,7 +200,7 @@ export const Wallet: React.FC = () => {
     if (user?.id && user.id !== 'guest') {
       api.data.getLastRecharges(user.id).then(setRecentRecharges);
     }
-    return () => stopMedia();
+    return () => { stopMedia(); };
   }, [user, stopMedia]);
 
   return (

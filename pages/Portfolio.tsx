@@ -5,7 +5,7 @@ import {
   Snowflake, Clock, Search, Loader2, Package,
   Calendar, ShieldCheck, Banknote, ArrowRight, AlertCircle,
   ChevronRight, Info, Truck, X, Hash, MapPin, User as UserIcon, Settings, MessageSquare, MessageCircle,
-  CheckCircle2, History, Inbox, ShoppingBag, Phone, Home, Building, Lock, Star
+  CheckCircle2, History, Inbox, ShoppingBag, Phone, Home, Building, Lock, Star, Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -971,7 +971,7 @@ export const Portfolio: React.FC = () => {
         .insert({
           pedido_id: requestToRate.id_pedido_maestro,
           repartidor_id: requestToRate.operador_id,
-          socio_id: user.id,
+          socio_id: user?.id,
           calificacion: rating,
           comentario: comment
         });
@@ -1228,7 +1228,7 @@ export const Portfolio: React.FC = () => {
       return;
     }
 
-    const availableBalance = user.vault_balance ?? user.balance ?? 0;
+    const availableBalance = user?.vault_balance ?? (user as any)?.balance ?? 0;
     const totalCost = (deliveryMethod === 'domicilio' ? deliveryCost : 0);
 
     if (availableBalance < totalCost) {
@@ -1253,8 +1253,8 @@ export const Portfolio: React.FC = () => {
         .from('entregas_maestras')
         .insert({
           id_pedido: idPedidoMaestro,
-          socio_id: user.id,
-          usuario_id: user.id,
+          socio_id: user?.id,
+          usuario_id: user?.id,
           estado_maestro: 'pendiente',
           metodo: deliveryMethod,
           monto_envio_cobrar: totalCost,
@@ -1262,7 +1262,7 @@ export const Portfolio: React.FC = () => {
           numero_casa: addressForm.casa_numero,
           referencia: addressForm.referencias,
           ciudad: addressForm.ciudad,
-          nombre_cliente: user.nombre_completo || user.full_name || user.email,
+          nombre_cliente: (user as any)?.nombre_completo || user?.full_name || user?.email,
           telefono: addressForm.telefono_contacto,
           // Nuevos campos obligatorios
           quien_recibe: addressForm.quien_recibe,
@@ -1286,8 +1286,8 @@ export const Portfolio: React.FC = () => {
 
         return {
           id_pedido_maestro: idPedidoMaestro,
-          socio_email: user.email,
-          socio_id: user.id,
+          socio_email: user?.email,
+          socio_id: user?.id,
           metodo: deliveryMethod,
           // Paquete de Datos Descriptivo para el Repartidor
           productos_ids: [{
@@ -1320,7 +1320,7 @@ export const Portfolio: React.FC = () => {
 
       if (totalCost > 0) {
         await supabase.from('mi_saldo').insert({
-          socio_email: user.email,
+          socio_email: user?.email,
           monto: -totalCost,
           concepto: `LOGÍSTICA: ${deliveryMethod?.toUpperCase()}`
         });
