@@ -32,12 +32,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       
       {/* ATMÓSFERA DE LUZ ESTÁTICA DESDE ESQUINA */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          {/* LUZ BLANCA: Sale exactamente desde la esquina superior izquierda */}
-          <div className="absolute top-0 left-0 w-[80vw] h-[50vh] opacity-50"
-               style={{ background: 'radial-gradient(circle at 0% 0%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.05) 50%, transparent 80%)', filter: 'blur(60px)' }}></div>
+          {/* LUZ BLANCA: Muy sutil */}
+          <div className="absolute top-0 left-0 w-[80vw] h-[50vh] opacity-10"
+               style={{ background: 'radial-gradient(circle at 0% 0%, rgba(255,255,255,0.4) 0%, transparent 80%)', filter: 'blur(100px)' }}></div>
           
-          {/* LUZ DORADA: Esquina inferior derecha */}
-          <div className="absolute bottom-0 right-0 w-[60vw] h-[40vh] opacity-20"
+          {/* LUZ DORADA: Muy sutil */}
+          <div className="absolute bottom-0 right-0 w-[60vw] h-[40vh] opacity-[0.05]"
                style={{ background: 'radial-gradient(circle at 100% 100%, rgba(212,175,55,0.2) 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
           
           {/* Fondo base sólido */}
@@ -109,17 +109,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
       </main>
 
-      {/* MOBILE BOTTOM NAV */}
+      {/* MOBILE BOTTOM NAV - FLOATING PILL */}
       {showNav && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center pointer-events-none">
-            <nav className="pointer-events-auto bg-black/60 backdrop-blur-3xl border-t border-white/5 rounded-t-[2.5rem] px-8 py-4 flex items-center justify-between gap-4 w-full pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        <div className="lg:hidden fixed bottom-8 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
+            <nav className="pointer-events-auto bg-black/40 backdrop-blur-2xl border border-white/5 rounded-full px-8 py-3 flex items-center justify-between gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 {navItems.map((item) => {
                     const active = isActive(item.path);
                     return (
-                        <Link key={item.path} to={item.path} className="group relative flex flex-col items-center justify-center w-12 h-12">
-                            <div className={`relative z-10 transition-all duration-300 ${active ? 'text-gold-400' : 'text-gray-600 group-hover:text-white'}`}>
-                                {React.cloneElement(item.icon as React.ReactElement<LucideProps>, { size: 24 })}
+                        <Link key={item.path} to={item.path} className="group relative flex flex-col items-center justify-center w-10 h-10">
+                            <div className={`relative z-10 transition-all duration-500 ${active ? 'text-gold-400 scale-110' : 'text-white/20 group-hover:text-white'}`}>
+                                {React.cloneElement(item.icon as React.ReactElement<LucideProps>, { size: 20, strokeWidth: active ? 2 : 1.5 })}
                             </div>
+                            {active && (
+                              <div className="absolute -bottom-1 w-1 h-1 bg-gold-400 rounded-full shadow-[0_0_10px_rgba(212,175,55,0.8)]"></div>
+                            )}
                         </Link>
                     )
                 })}

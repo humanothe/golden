@@ -7,7 +7,7 @@ import { AppNotification } from '../types';
 
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [loading, setLoading] = useState(true);
 

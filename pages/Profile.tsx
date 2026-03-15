@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUI } from '../contexts/UIContext';
 import { api } from '../services/api';
 import { 
-    LogOut, ChevronRight, Crown, Loader2, Store, Receipt, PlusCircle, AlertCircle
+    LogOut, ChevronRight, Crown, Loader2, Store, Receipt, PlusCircle, AlertCircle,
+    ShieldCheck
 } from 'lucide-react';
 
 export const Profile: React.FC = () => {
@@ -15,6 +16,8 @@ export const Profile: React.FC = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [editProfileData, setEditProfileData] = useState({
     full_name: user?.full_name || '',
@@ -42,8 +45,14 @@ export const Profile: React.FC = () => {
         provincia: editProfileData.sector
       });
       await refreshProfile();
-      alert("SISTEMA ACTUALIZADO.");
-    } catch (err: any) { alert("ERROR: " + err.message); } finally { setIsUpdatingProfile(false); }
+      setSuccessMsg("SISTEMA ACTUALIZADO");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) { 
+      setErrorMsg("ERROR: " + err.message); 
+      setTimeout(() => setErrorMsg(null), 4000);
+    } finally { 
+      setIsUpdatingProfile(false); 
+    }
   };
 
   const handleLogout = async () => {
@@ -67,132 +76,215 @@ export const Profile: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen pb-40 bg-transparent max-w-xl ml-0 text-left font-sans animate-fade-in px-6 md:px-12 relative overflow-hidden">
+      <div className="min-h-screen pb-40 bg-black max-w-xl mx-auto text-left font-sans animate-fade-in px-10 relative overflow-hidden">
       
-      {/* ATMÓSFERA LUMÍNICA - PROFILE (Central: Top y Bottom) */}
+      {/* ATMÓSFERA LUMÍNICA - SUTILÍSIMA */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100vw] h-[40vh] opacity-[0.2]"
-               style={{ background: 'radial-gradient(circle at 50% 0%, white 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[100vw] h-[40vh] opacity-[0.1]"
-               style={{ background: 'radial-gradient(circle at 50% 100%, #D4AF37 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
+          <div className="absolute top-0 right-0 w-full h-[30vh] opacity-[0.03]"
+               style={{ background: 'radial-gradient(circle at 100% 0%, #D4AF37 0%, transparent 70%)', filter: 'blur(80px)' }}></div>
       </div>
 
       <div className="relative z-10">
-          <header className="pt-12 mb-12 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-white/5 border border-white/10 flex items-center justify-center rounded-none shadow-inner overflow-hidden">
-                {/* LOGO EN TONO ORIGINAL SIN FILTROS */}
-                <img src={masterLogo} className="h-10 w-auto object-contain" alt="Golden Logo" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tighter leading-none">{user?.full_name || 'Socio Golden'}</h2>
-                {/* LETRA DEL PLAN SIN INCLINACIÓN */}
-                <p className="text-[9px] text-gold-400 font-black uppercase tracking-[0.3em] mt-1">{user?.membership_tier}</p>
+          <header className="pt-32 mb-24">
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-gold-400 uppercase tracking-[0.8em] opacity-30">SOCIO_GOLDEN</p>
+              <h2 className="text-7xl font-extralight text-white uppercase tracking-tighter leading-[0.85]">
+                {user?.full_name?.split(' ')[0] || 'ANTONIO'}
+              </h2>
+              <div className="flex items-center gap-3 pt-4">
+                <div className="w-2 h-2 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
+                <p className="text-[9px] text-white/40 font-black uppercase tracking-[0.5em]">{user?.membership_tier || 'ENTRY_LEVEL'}</p>
               </div>
             </div>
           </header>
 
-          <div className="space-y-4">
-            <button onClick={() => navigate('/history')} className="w-full flex items-center justify-between p-6 bg-white/5 border border-white/5 text-white rounded-none transition-all group">
-              <div className="flex items-start gap-5">
-                <Receipt size={20} className="text-gold-400 mt-0.5" />
-                <div className="text-left">
-                  <span className="text-sm font-bold tracking-widest uppercase block leading-none">Historial</span>
-                  <span className="text-[9px] font-light tracking-[0.2em] uppercase text-gray-500 mt-2 block">mi boveda de actividades</span>
+          <div className="space-y-20">
+            {/* LISTA DE ACCIONES - EDITORIAL STYLE */}
+            <nav className="space-y-0">
+              <button 
+                onClick={() => navigate('/history')} 
+                className="group w-full flex items-center justify-between py-8 border-b border-white/5 transition-all hover:px-4"
+              >
+                <div className="flex items-center gap-8">
+                  <span className="text-[10px] font-mono text-white/20 group-hover:text-gold-400 transition-colors">01</span>
+                  <span className="text-2xl font-light text-white/60 group-hover:text-white transition-all tracking-tight uppercase">HISTORIAL</span>
                 </div>
-              </div>
-              <ChevronRight size={16} className="opacity-20" />
-            </button>
+                <ChevronRight size={16} className="text-white/5 group-hover:text-gold-400 transition-all" />
+              </button>
 
-            <button onClick={() => navigate('/plans')} className="w-full flex items-center justify-between p-6 bg-white/5 border border-white/5 text-white rounded-none transition-all group">
-              <div className="flex items-center gap-5">
-                <Crown size={20} className="text-gold-400" />
-                <span className="text-sm font-bold tracking-widest uppercase leading-none">Gestionar Membresía</span>
-              </div>
-              <ChevronRight size={16} className="opacity-20" />
-            </button>
+              <button 
+                onClick={() => navigate('/plans')} 
+                className="group w-full flex items-center justify-between py-8 border-b border-white/5 transition-all hover:px-4"
+              >
+                <div className="flex items-center gap-8">
+                  <span className="text-[10px] font-mono text-white/20 group-hover:text-gold-400 transition-colors">02</span>
+                  <span className="text-2xl font-light text-white/60 group-hover:text-white transition-all tracking-tight uppercase">MEMBRESÍA</span>
+                </div>
+                <ChevronRight size={16} className="text-white/5 group-hover:text-gold-400 transition-all" />
+              </button>
 
-            {businessStatus === 'approved' ? (
-              <button onClick={() => navigate('/business-admin')} className="w-full flex items-center justify-between p-8 bg-gold-400 text-black rounded-none shadow-2xl transition-all active:scale-[0.98]">
-                <div className="flex items-start gap-6 overflow-hidden">
-                  <Store size={24} className="shrink-0 mt-1" />
-                  <div className="text-left">
-                    <span className="font-heading text-xl font-black tracking-tighter uppercase block leading-none whitespace-nowrap">MI NEGOCIO</span>
-                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60 whitespace-nowrap mt-2 block">CONTROL DE OPERACIONES</span>
+              {businessStatus === 'approved' ? (
+                <button 
+                  onClick={() => navigate('/business-admin')} 
+                  className="group w-full flex items-center justify-between py-10 border-b border-gold-400/20 transition-all hover:px-4"
+                >
+                  <div className="flex items-center gap-8">
+                    <span className="text-[10px] font-mono text-gold-400/40 group-hover:text-gold-400 transition-colors">03</span>
+                    <div className="text-left">
+                      <span className="text-3xl font-black text-gold-400 tracking-tighter uppercase leading-none">MI_NEGOCIO</span>
+                      <span className="text-[8px] font-black text-gold-400/30 uppercase tracking-[0.4em] block mt-1">NODO_CENTRAL</span>
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full border border-gold-400/20 flex items-center justify-center group-hover:bg-gold-400 group-hover:text-black transition-all">
+                    <ChevronRight size={16} strokeWidth={3} />
+                  </div>
+                </button>
+              ) : businessStatus === 'pending' ? (
+                <div className="w-full py-8 border-b border-white/5 flex items-center gap-8 opacity-40">
+                  <span className="text-[10px] font-mono text-white/20">03</span>
+                  <div className="flex items-center gap-4">
+                    <Loader2 size={14} className="text-amber-500 animate-spin" />
+                    <span className="text-xl font-light text-white uppercase tracking-tight">VALIDANDO...</span>
                   </div>
                 </div>
-                <ChevronRight size={20} className="opacity-40 shrink-0" />
-              </button>
-            ) : businessStatus === 'pending' ? (
-              <button onClick={() => navigate('/espera')} className="w-full p-6 bg-white/5 border border-white/10 rounded-none flex items-start gap-5">
-                <Loader2 size={20} className="text-amber-500 animate-spin mt-1" />
-                <div className="text-left">
-                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none">Validación en curso</p>
-                  <p className="text-[9px] text-gray-500 font-medium italic mt-2">Click para ver estatus</p>
-                </div>
-              </button>
-            ) : (
-              <button onClick={() => navigate('/role-application')} className="w-full flex items-center justify-between p-6 bg-white/5 border border-white/5 text-white rounded-none transition-all group">
-                <div className="flex items-center gap-5">
-                  <PlusCircle size={20} className="text-gray-500" />
-                  <span className="text-sm font-bold tracking-widest uppercase leading-none">Registrar Negocio</span>
-                </div>
-                <ChevronRight size={16} className="opacity-20" />
-              </button>
-            )}
+              ) : (
+                <button 
+                  onClick={() => navigate('/role-application')} 
+                  className="group w-full flex items-center justify-between py-8 border-b border-white/5 transition-all hover:px-4"
+                >
+                  <div className="flex items-center gap-8">
+                    <span className="text-[10px] font-mono text-white/20 group-hover:text-gold-400 transition-colors">03</span>
+                    <span className="text-2xl font-light text-white/60 group-hover:text-white transition-all tracking-tight uppercase">REGISTRAR_NEGOCIO</span>
+                  </div>
+                  <PlusCircle size={16} className="text-white/5 group-hover:text-gold-400 transition-all" />
+                </button>
+              )}
+            </nav>
 
-            <div className="pt-12 space-y-6">
-                <h3 className="text-[9px] font-black text-gray-700 uppercase tracking-[0.5em] px-1">Configuración del Nodo</h3>
-                <div className="space-y-6 bg-white/[0.02] p-8 border border-white/5 rounded-none">
-                    <div className="space-y-2">
-                        <label className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Socio Propietario</label>
-                        <input type="text" value={editProfileData.full_name} onChange={e => setEditProfileData({...editProfileData, full_name: e.target.value})} className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-gold-400 transition-all uppercase" />
+            {/* CONFIGURACIÓN - ULTRA MINIMAL */}
+            <div className="space-y-16">
+                <div className="space-y-12">
+                    <div className="group space-y-2">
+                        <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.6em] block group-focus-within:text-gold-400 transition-colors">IDENTIDAD</label>
+                        <input 
+                          type="text" 
+                          value={editProfileData.full_name} 
+                          onChange={e => setEditProfileData({...editProfileData, full_name: e.target.value})} 
+                          className="w-full bg-transparent border-none p-0 text-2xl text-white/80 focus:text-white focus:outline-none transition-all uppercase font-light tracking-tight" 
+                        />
+                        <div className="w-full h-[1px] bg-white/5 group-focus-within:bg-gold-400 transition-all"></div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Línea de Contacto</label>
-                        <input type="tel" value={editProfileData.phone} onChange={e => setEditProfileData({...editProfileData, phone: e.target.value})} className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-gold-400 transition-all" />
+                    
+                    <div className="group space-y-2">
+                        <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.6em] block group-focus-within:text-gold-400 transition-colors">SINCRONIZACIÓN</label>
+                        <input 
+                          type="tel" 
+                          value={editProfileData.phone} 
+                          onChange={e => setEditProfileData({...editProfileData, phone: e.target.value})} 
+                          className="w-full bg-transparent border-none p-0 text-2xl text-white/80 focus:text-white focus:outline-none transition-all font-mono font-light tracking-tight" 
+                        />
+                        <div className="w-full h-[1px] bg-white/5 group-focus-within:bg-gold-400 transition-all"></div>
                     </div>
-                    <button onClick={handleUpdateProfile} disabled={isUpdatingProfile} className="w-full py-4 bg-white text-black text-[9px] font-black uppercase tracking-widest transition-all rounded-none hover:bg-gold-400">
-                      {isUpdatingProfile ? <Loader2 size={12} className="animate-spin" /> : 'Sincronizar Nodo'}
+                    
+                    <button 
+                      onClick={handleUpdateProfile} 
+                      disabled={isUpdatingProfile} 
+                      className="text-[10px] font-black text-white uppercase tracking-[0.8em] hover:text-gold-400 transition-colors flex items-center gap-4"
+                    >
+                      {isUpdatingProfile ? <Loader2 size={14} className="animate-spin" /> : (
+                        <>
+                          <span>ACTUALIZAR_SISTEMA</span>
+                          <div className="w-12 h-[1px] bg-gold-400/30"></div>
+                        </>
+                      )}
                     </button>
                 </div>
-            </div>
 
-            <div className="pt-12 px-1">
-              <button onClick={() => setShowLogoutConfirm(true)} disabled={isLoggingOut} className="text-[9px] font-black uppercase tracking-[0.5em] text-red-500/40 hover:text-red-500 transition-all flex items-center gap-3">
-                <LogOut size={14} /> {isLoggingOut ? 'SALIENDO...' : 'DESCONECTAR SESIÓN'}
-              </button>
+                <div className="pt-12">
+                  <button 
+                    onClick={() => setShowLogoutConfirm(true)} 
+                    disabled={isLoggingOut} 
+                    className="text-[10px] font-black text-red-500/40 hover:text-red-500 uppercase tracking-[0.8em] transition-all"
+                  >
+                    {isLoggingOut ? 'DESCONECTANDO...' : 'DESVINCULAR_CUENTA'}
+                  </button>
+                </div>
             </div>
           </div>
       </div>
     </div>
-
-    {/* MODAL ELEGANTE DE CONFIRMACIÓN DE CIERRE DE SESIÓN - FUERA DEL CONTENEDOR ANIMADO PARA CENTRADO ABSOLUTO */}
+        {/* MODAL DE DESCONEXIÓN - REDISEÑO ULTRA PREMIUM */}
     {showLogoutConfirm && (
-      <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl animate-fade-in">
-        <div className="max-w-xs w-full bg-[#0d0d0d] border border-white/10 p-10 text-center shadow-2xl space-y-10 rounded-[2rem]">
-          <div className="flex flex-col items-center gap-6">
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
-                  <AlertCircle size={32} className="text-red-500" />
+      <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-3xl animate-fade-in">
+        <div className="max-w-sm w-full animate-enter-screen text-center space-y-12">
+          <div className="flex flex-col items-center gap-8">
+              <div className="w-24 h-24 bg-red-500/[0.02] rounded-[2rem] flex items-center justify-center border border-red-500/10 relative group">
+                  <div className="absolute inset-0 bg-red-500/5 blur-2xl group-hover:bg-red-500/10 transition-all duration-1000"></div>
+                  <AlertCircle size={40} className="text-red-500 relative z-10 opacity-60" strokeWidth={1.5} />
               </div>
-              <h3 className="text-lg font-heading font-black text-white uppercase tracking-tighter">¿Cerrar Sesión?</h3>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-loose">Tu conexión con el Nodo Maestro será interrumpida.</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-3 opacity-20">
+                  <div className="w-4 h-[1px] bg-red-500"></div>
+                  <span className="text-[9px] font-black uppercase tracking-[0.6em] text-red-500 ml-[0.6em]">SEGURIDAD</span>
+                  <div className="w-4 h-[1px] bg-red-500"></div>
+                </div>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">¿CONFIRMA LA <br/> DESCONEXIÓN?</h2>
+              </div>
           </div>
-          <div className="flex flex-col gap-3">
+          
+          <div className="space-y-4">
               <button 
                 onClick={handleLogout} 
-                className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] active:scale-95 transition-all shadow-xl"
+                className="w-full py-6 bg-white text-black font-black uppercase text-[11px] tracking-[0.4em] rounded-2xl active:scale-95 transition-all shadow-2xl"
               >
-                CONFIRMAR SALIDA
+                CONFIRMAR_SALIDA
               </button>
               <button 
                 onClick={() => setShowLogoutConfirm(false)} 
-                className="w-full py-3 text-gray-500 hover:text-white font-black uppercase text-[8px] tracking-widest transition-all"
+                className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-[0.4em] transition-all py-2"
               >
-                VOLVER ATRÁS
+                VOLVER_AL_SISTEMA
               </button>
           </div>
         </div>
+      </div>
+    )}
+
+    {/* OVERLAYS DE ESTADO PREMIUM - REFINADOS */}
+    {(successMsg || errorMsg) && (
+      <div className="fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl animate-fade-in">
+        {successMsg && (
+          <div className="max-w-sm w-full text-center space-y-12 animate-enter-screen">
+             <div className="w-28 h-28 bg-green-500/[0.02] rounded-[2.5rem] flex items-center justify-center mx-auto border border-green-500/10 shadow-[0_0_60px_rgba(34,197,94,0.05)]">
+               <ShieldCheck size={48} className="text-green-500 opacity-60" strokeWidth={1.5} />
+             </div>
+             <div className="space-y-4">
+               <h2 className="text-3xl font-black text-green-500 uppercase tracking-tighter leading-none">{successMsg}</h2>
+               <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-[1px] bg-green-500/10"></div>
+                  <p className="text-[9px] text-white/10 uppercase tracking-[0.8em] font-black ml-[0.8em]">NODO_SINCRONIZADO</p>
+               </div>
+             </div>
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="max-w-sm w-full text-center space-y-12 animate-enter-screen">
+             <div className="w-28 h-28 bg-red-500/[0.02] rounded-[2.5rem] flex items-center justify-center mx-auto border border-red-500/10 shadow-[0_0_60px_rgba(239,68,68,0.05)]">
+               <AlertCircle size={48} className="text-red-500 opacity-60" strokeWidth={1.5} />
+             </div>
+             <div className="space-y-4">
+               <p className="text-[10px] font-black text-red-500/40 uppercase tracking-[0.4em] mb-2">FALLO_DE_SISTEMA</p>
+               <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-tight">{errorMsg}</h2>
+             </div>
+             <button 
+              onClick={() => setErrorMsg(null)} 
+              className="w-full py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.4em] rounded-2xl active:scale-[0.95] shadow-2xl transition-all"
+             >
+              REINTENTAR
+             </button>
+          </div>
+        )}
       </div>
     )}
   </>

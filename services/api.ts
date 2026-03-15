@@ -1,6 +1,6 @@
 import { supabase, isConfigured } from './supabaseClient';
 import { 
-  User, Business, Product
+  User, Business, Product, Order
 } from '../types';
 
 const handleApiError = (e: any): string => {
@@ -46,9 +46,10 @@ export const mapUser = (sbUser: any, profile: any, realVaultBalance: number): Us
     profile_completed: !!profile?.full_name && profile.full_name !== 'SOCIO GOLDEN' && profile.full_name !== 'Socio Golden',
     membership_selected: tier.toLowerCase() !== 'free',
     has_seen_plans: profile?.has_seen_plans || false,
-    address_street: profile?.address_street,
-    address_number: profile?.address_number,
-    sector: profile?.provincia || profile?.sector 
+    address_street: profile?.direccion,
+    address_number: '', // El número suele estar incluido en 'direccion' en este esquema
+    sector: profile?.provincia || profile?.sector,
+    direccion_alternativa: profile?.direccion_alternativa
   };
 };
 
@@ -86,27 +87,46 @@ export const api = {
     },
     syncUserProfile: async (sbUser: any) => {
       if (!sbUser) return null;
-      try {
-        const userEmail = sbUser.email.toLowerCase().trim();
-        const { data: profile, error } = await supabase
-          .from('perfiles')
-          .select('id, full_name, membership_tier, status, created_at, telefono, provincia, has_seen_plans')
-          .eq('id', sbUser.id)
-          .maybeSingle();
-        
-        if (error) console.error("Profile fetch error:", error);
+      
+      const userEmail = sbUser.email.toLowerCase().trim();
+      let profile = null;
+      let retries = 3;
 
+      while (retries > 0 && !profile) {
+        try {
+          const { data, error } = await supabase
+            .from('perfiles')
+            .select('*, direccion_alternativa')
+            .eq('email', userEmail)
+            .maybeSingle();
+          
+          if (!error) {
+            profile = data;
+            break;
+          }
+          
+          console.warn(`Reintento de conexión (${4 - retries}/3)...`);
+          retries--;
+          if (retries > 0) await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (e) {
+          retries--;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      try {
         const { data: ledgerRows, error: ledgerError } = await supabase
           .from('mi_saldo')
           .select('monto')
           .eq('socio_email', userEmail)
           .neq('socio_email', 'golden@gmail.com');
 
-        if (ledgerError) console.error("Ledger fetch error:", ledgerError);
+        if (ledgerError) {
+          console.error("Ledger fetch error:", ledgerError);
+        }
 
         const calculatedBalance = ledgerRows?.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0) || 0;
         
-        // Retornamos un objeto base si el perfil no existe para evitar el crash AUTH_SYNC_FAILED
         return { 
           ...(profile || { id: sbUser.id, full_name: 'SOCIO GOLDEN', membership_tier: 'Free' }), 
           calculatedBalance 
@@ -153,10 +173,23 @@ export const api = {
       try {
         const { data } = await supabase
           .from('solicitudes_registro')
-          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url')
+          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url, descripcion_negocio, direccion, portada_url')
           .eq('dueño_id', userId)
           .maybeSingle();
-        return data;
+        if (!data) return null;
+        return {
+          id: data.id,
+          name: data.nombre_negocio,
+          description: data.descripcion_negocio || '',
+          logo_url: data.logo_url,
+          image_url: data.portada_url || '',
+          category: data.categoria,
+          rating: 4.8,
+          rating_count: 120,
+          delivery_time: '20-35 min',
+          address: data.direccion,
+          zone: data.provincia
+        } as Business;
       } catch (e) { return null; }
     },
     getBusinessById: async (id: string) => {
@@ -244,9 +277,11 @@ export const api = {
           customer_phone: '---',
           total: Number(item.precio_congelado),
           status: item.estado_entrega === 'recogido' ? 'picked_up' : 'ready',
+          delivery_method: 'standard',
+          payment_method: 'balance',
           created_at: item.fecha_inicio,
           items: []
-        }));
+        })) as Order[];
       } catch (e) { return []; }
     },
     getDeliveryPool: async (_driverId: string) => {
@@ -269,9 +304,11 @@ export const api = {
           customer_phone: '---',
           total: Number(item.precio_congelado),
           status: 'ready',
+          delivery_method: 'standard',
+          payment_method: 'balance',
           created_at: item.fecha_inicio,
           items: []
-        }));
+        })) as Order[];
       } catch (e) { return []; }
     },
     claimOrder: async (orderId: string, driverId: string) => {
@@ -305,10 +342,15 @@ export const api = {
     getBusinessOrders: async (businessId: string) => {
       try {
         const { data } = await supabase.from('orders')
-          .select('id, total, status, created_at')
+          .select('*')
           .eq('business_id', businessId)
           .order('created_at', { ascending: false });
-        return data || [];
+        return (data || []).map(order => ({
+          ...order,
+          items: order.items || [],
+          delivery_method: order.delivery_method || 'standard',
+          payment_method: order.payment_method || 'balance'
+        })) as Order[];
       } catch (e) { return []; }
     },
     getNotifications: async () => {
@@ -316,7 +358,7 @@ export const api = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
         const { data } = await supabase.from('notifications')
-          .select('id, title, message, type, read, created_at')
+          .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         return data || [];

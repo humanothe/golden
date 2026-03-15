@@ -135,7 +135,7 @@ export const Onboarding: React.FC = () => {
       
     } catch (e: any) {
       console.error("Critical Onboarding Error:", e);
-      setDbError(e.message || "Error al sincronizar con el Nodo Maestro.");
+      setDbError(e.message || "Error al sincronizar con el Servidor Central.");
     } finally {
       setLoading(false);
     }
@@ -154,7 +154,7 @@ export const Onboarding: React.FC = () => {
               <h1 className="text-4xl font-heading font-bold tracking-tighter uppercase leading-none mb-3">
                 IDENTIDAD <span className="text-gold-400">GOLDEN</span>
               </h1>
-              <p className="text-gray-500 uppercase tracking-[0.4em] text-[10px] font-black">Activa tu Acceso Maestro</p>
+              <p className="text-gray-500 uppercase tracking-[0.4em] text-[10px] font-bold">Activa tu Acceso</p>
           </div>
           
           <div className="space-y-10 mb-10">

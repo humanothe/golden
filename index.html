@@ -23,78 +23,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              gold: {
-                50: '#fbf8eb', 100: '#f4ecce', 200: '#ead79d', 300: '#ddbc64',
-                400: '#D4AF37', 500: '#c2962d', 600: '#a87724', 700: '#865920',
-                800: '#714a20', 900: '#623f1f',
-              },
-              obsidian: '#050505',
-              platinum: '#E5E4E2'
-            },
-            fontFamily: {
-              heading: ['Cinzel', 'serif'],
-              sans: ['Montserrat', 'sans-serif'],
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-            },
-            keyframes: {
-              fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
-            }
-          }
-        }
-      }
-    </script>
-
-    <style type="text/css">
-      :root { color-scheme: dark; }
-      body { 
-        background-color: #050505; 
-        margin: 0; 
-        -webkit-tap-highlight-color: transparent;
-        overscroll-behavior-y: contain;
-        user-select: none;
-        font-family: 'Cinzel', serif;
-      }
-      .vignette-overlay { background: radial-gradient(circle, transparent 20%, #050505 150%); }
-      .text-gold-metallic {
-        background: linear-gradient(to bottom, #f4ecce 0%, #D4AF37 50%, #a87724 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      ::-webkit-scrollbar { width: 0px; }
-    </style>
-
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react/": "https://esm.sh/react@18.2.0/",
-        "react-dom": "https://esm.sh/react-dom@18.2.0",
-        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "react-router-dom": "https://esm.sh/react-router-dom@6.22.1?external=react,react-dom",
-        "lucide-react": "https://esm.sh/lucide-react@0.263.1?external=react,react-dom",
-        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.3",
-        "qrcode.react": "https://esm.sh/qrcode.react@3.1.0?external=react,react-dom"
-      }
-    }
-    </script>
-  <link rel="stylesheet" href="/index.css">
-</head>
+    <link rel="stylesheet" href="/src/index.css">
+  </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

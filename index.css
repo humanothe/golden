@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-white antialiased transition-colors duration-300;
+  }
+
+  .light body {
+    @apply bg-[#F8F9FA] text-[#1A1A1A] !important;
+  }
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F2D472 50%, #D4AF37 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #D4AF37 0%, #F2D472 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-card {
+  @apply bg-white/5 border border-white/10 backdrop-blur-md transition-all;
+}
+
+.light .glass-card {
+  @apply bg-white border-black/5 shadow-xl shadow-black/5 !important;
+}
+
+.light .text-white\/40 {
+  @apply text-black/40 !important;
+}
+
+.light .text-white\/20 {
+  @apply text-black/20 !important;
+}
+
+.light .bg-white\/5 {
+  @apply bg-black/5 !important;
+}
+
+.light .bg-white\/10 {
+  @apply bg-black/10 !important;
+}
+
+.light .border-white\/10 {
+  @apply border-black/10 !important;
+}
+
+.light .border-white\/5 {
+  @apply border-black/5 !important;
+}
+
+.nav-item-active {
+  @apply text-gold-400;
+}
+
+.nav-item-inactive {
+  @apply text-white/40 hover:text-white/60;
+}
+
+.light .nav-item-inactive {
+  @apply text-black/20 hover:text-black/40 !important;
+}

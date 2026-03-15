@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { supabase } from '../services/supabaseClient';
 
-declare const jsQR: any;
+declare const Html5Qrcode: any;
 
 type AppStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -28,26 +28,19 @@ export const Wallet: React.FC = () => {
   const [recentRecharges, setRecentRecharges] = useState<any[]>([]);
 
   const isQuerying = useRef(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const requestRef = useRef<number | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const isScanning = useRef(false);
+  const scannerInstance = useRef<any>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
-  const stopMedia = useCallback(() => {
-    isScanning.current = false;
-    if (requestRef.current) {
-      cancelAnimationFrame(requestRef.current);
-      requestRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => {
-        track.stop();
-      });
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
+  const stopMedia = useCallback(async () => {
+    setIsScanning(false);
+    if (scannerInstance.current) {
+      try {
+        await scannerInstance.current.stop();
+        scannerInstance.current = null;
+      } catch (e) {
+        console.error("Error stopping scanner", e);
+        scannerInstance.current = null;
+      }
     }
   }, []);
 
@@ -62,6 +55,7 @@ export const Wallet: React.FC = () => {
   }, [stopMedia]);
 
   const verifyPin = async (targetPin: string) => {
+    console.log("VERIFYING PIN:", targetPin);
     const cleanPin = targetPin.trim().toUpperCase();
     if (!cleanPin || isQuerying.current) return;
     
@@ -70,13 +64,19 @@ export const Wallet: React.FC = () => {
     isQuerying.current = true;
 
     try {
+      console.log("QUERYING SUPABASE FOR PIN:", cleanPin);
       const { data, error } = await supabase
         .from('tarjetas_golden')
         .select('id, codigo_pin, valor_punto, estado, perfil_id')
         .eq('codigo_pin', cleanPin)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("SUPABASE ERROR:", error);
+        throw error;
+      }
+      
+      console.log("CARD DATA RECEIVED:", data);
       
       if (!data) {
         setErrorMsg("IDENTIDAD NO ENCONTRADA EN EL LIBRO MAYOR.");
@@ -108,20 +108,33 @@ export const Wallet: React.FC = () => {
   };
 
   const confirmRecharge = async () => {
-    if (!user?.id || !cardData || isQuerying.current) return;
+    console.log("CONFIRMING RECHARGE FOR CARD:", cardData?.id);
+    if (!user?.id || !cardData || isQuerying.current) {
+      console.warn("RECHARGE ABORTED: Missing user, cardData or already querying.");
+      return;
+    }
     
     setAppStatus('loading');
     isQuerying.current = true;
     setErrorMsg(null);
 
     try {
-      const { error: rpcError } = await supabase.rpc('procesar_canje_tarjeta', {
+      console.log("CALLING RPC procesar_canje_tarjeta WITH:", {
+        p_tarjeta_id: cardData.id,
+        p_socio_id: user.id
+      });
+      
+      const { data: rpcData, error: rpcError } = await supabase.rpc('procesar_canje_tarjeta', {
           p_tarjeta_id: cardData.id,
           p_socio_id: user.id
       });
 
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        console.error("RPC ERROR:", rpcError);
+        throw rpcError;
+      }
 
+      console.log("RPC SUCCESS:", rpcData);
       setSuccessMsg("¡Recarga Exitosa! Capital liquidado en tu bóveda.");
       
       await refreshProfile(); 
@@ -146,57 +159,56 @@ export const Wallet: React.FC = () => {
     }
   };
 
-  const scanFrame = useCallback(() => {
-    if (!isScanning.current || !videoRef.current || !canvasRef.current) return;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-    if (video.readyState === video.HAVE_ENOUGH_DATA && ctx) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-
-      if (code && code.data) {
-        const rawDetection = code.data.trim().toUpperCase();
-        isScanning.current = false;
-        if (navigator.vibrate) navigator.vibrate(150);
-        setPinInput(rawDetection);
-        stopMedia();
-        verifyPin(rawDetection);
-        return;
-      }
-    }
-    if (isScanning.current) requestRef.current = requestAnimationFrame(scanFrame);
-  }, [stopMedia]);
-
   const startCamera = async () => {
     setErrorMsg(null);
-    stopMedia();
+    await stopMedia();
     setInputMode('camera');
+    setIsScanning(true);
     
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" }, 
-        audio: false 
-      });
-
-      streamRef.current = stream;
-      isScanning.current = true;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch(e => console.error("Video play error", e));
-          requestRef.current = requestAnimationFrame(scanFrame);
+    // Esperamos un frame para que el div #reader esté en el DOM
+    requestAnimationFrame(async () => {
+      try {
+        const html5QrCode = new Html5Qrcode("reader");
+        scannerInstance.current = html5QrCode;
+        
+        const config = { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0
         };
+
+        const onScanSuccess = (decodedText: string) => {
+          console.log("QR DETECTED:", decodedText);
+          if (navigator.vibrate) navigator.vibrate(150);
+          const rawDetection = decodedText.trim().toUpperCase();
+          setPinInput(rawDetection);
+          stopMedia();
+          verifyPin(rawDetection);
+        };
+
+        try {
+          await html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            onScanSuccess, 
+            () => {} // ignore errors
+          );
+        } catch (e) {
+          // Fallback a cualquier cámara si falla la trasera
+          await html5QrCode.start(
+            { video: true }, 
+            config, 
+            onScanSuccess, 
+            () => {}
+          );
+        }
+      } catch (err) {
+        console.error("Camera start error", err);
+        setErrorMsg("ERROR DE HARDWARE: No se pudo acceder al sensor óptico.");
+        setInputMode('none');
+        setIsScanning(false);
       }
-    } catch (err) {
-      setErrorMsg("ERROR DE HARDWARE: Permisos de cámara denegados.");
-      setInputMode('none');
-    }
+    });
   };
 
   useEffect(() => {
@@ -325,14 +337,7 @@ export const Wallet: React.FC = () => {
 
         {inputMode === 'camera' && appStatus === 'idle' && (
           <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center animate-fade-in overflow-hidden">
-            <video 
-              ref={videoRef} 
-              className="absolute inset-0 w-full h-full object-cover z-0" 
-              playsInline
-              muted
-              autoPlay
-            />
-            <canvas ref={canvasRef} className="hidden" />
+            <div id="reader" className="absolute inset-0 w-full h-full z-0"></div>
             
             <div className="absolute inset-0 z-10 pointer-events-none" style={{ boxShadow: '0 0 0 100vmax rgba(0,0,0,0.85)' }}>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 border border-white/10">
@@ -350,6 +355,11 @@ export const Wallet: React.FC = () => {
             >
               <X size={28} />
             </button>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+              #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
+              #reader { background: black !important; }
+            `}} />
           </div>
         )}
       </div>

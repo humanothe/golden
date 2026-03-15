@@ -1,7 +1,9 @@
 {
   "name": "Golden Acceso",
-  "description": "Plataforma Premium de Membresías y Ecosistema de Negocios Afiliados.",
+  "description": "Plataforma de gestión patrimonial",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone",
+    "geolocation"
   ]
 }

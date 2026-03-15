@@ -9,8 +9,8 @@ import { Order } from '../types';
 export const DeliveryDashboard: React.FC = () => {
   const { user } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
-  const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
-  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [availableOrders, setAvailableOrders] = useState<any[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'pool' | 'active'>('active');
 
@@ -54,9 +54,21 @@ export const DeliveryDashboard: React.FC = () => {
   };
 
   const handleUpdateStatus = async (orderId: string, status: 'picked_up' | 'delivered') => {
+      let token = '';
+      if (status === 'delivered') {
+          token = prompt("INGRESE EL CÓDIGO DE SEGURIDAD DE 6 DÍGITOS:") || '';
+          if (!token) return;
+      }
+
       setLoading(true);
-      await api.data.updateOrderStatus(orderId, status);
-      fetchDeliveryData();
+      const result = await api.data.updateOrderStatus(orderId, status, token);
+      
+      if (result.success) {
+          fetchDeliveryData();
+      } else {
+          alert(result.message || "Error al actualizar el estado.");
+          setLoading(false);
+      }
   };
 
   return (

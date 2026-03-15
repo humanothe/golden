@@ -73,10 +73,10 @@ export const WaitingScreen: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 text-center font-sans animate-fade-in relative">
+        <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-8 text-center font-sans animate-fade-in relative">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
             
-            <div className="glass-panel p-10 rounded-[3rem] bg-white/5 border border-gold-400/20 max-w-md shadow-2xl relative overflow-hidden z-10">
+            <div className="glass-panel p-10 rounded-[3rem] bg-black/5 dark:bg-white/5 border border-gold-400/20 max-w-md shadow-2xl relative overflow-hidden z-10">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gold-400/10 blur-[50px] rounded-full"></div>
                 
                 <div className="w-20 h-20 bg-gold-400/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-gold-400/20 relative">
@@ -88,15 +88,15 @@ export const WaitingScreen: React.FC = () => {
                     Auditoría <br/><span className="text-gold-400 text-lg tracking-[0.2em]">En Proceso</span>
                 </h1>
                 
-                <div className="space-y-6 mb-10 text-left border-y border-white/5 py-8">
+                <div className="space-y-6 mb-10 text-left border-y border-black/5 dark:border-white/5 py-8">
                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-loose">
                         Solicitud para: <span className="text-gold-400">{bizEmail || user?.email || 'NODO_IDENTIFICADO'}</span>
                     </p>
                     <p className="text-gray-400 text-[9px] uppercase tracking-widest leading-relaxed italic opacity-60">
-                        El Panel Maestro Golden está validando la estructura comercial de tu registro.
+                        El Panel de Control Golden está validando la estructura comercial de tu registro.
                     </p>
                     
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center gap-3">
+                    <div className="p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 flex items-center justify-center gap-3">
                         <Loader2 size={14} className="animate-spin text-gold-400" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-gold-400 animate-pulse">Sincronizando Nodo...</span>
                     </div>
@@ -106,7 +106,7 @@ export const WaitingScreen: React.FC = () => {
                     <button 
                         onClick={handleManualCheck}
                         disabled={isChecking}
-                        className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-95"
+                        className="w-full py-5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black/10 dark:bg-white/10 transition-all active:scale-95"
                     >
                         {isChecking ? <Loader2 className="animate-spin" size={16} /> : <><RefreshCcw size={16} /> Verificar Estatus</>}
                     </button>

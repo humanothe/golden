@@ -3,30 +3,95 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Check, Package, Truck, Home, ShoppingBag, ArrowRight, Share2, Copy, Loader2, Clock } from 'lucide-react';
-import { api } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import { Order, OrderStatus } from '../types';
+import Timeline from '../components/Timeline';
 
 export const OrderTracking: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [latestOrder, setLatestOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [repartidor, setRepartidor] = useState<{ nombre: string; vehiculo: string } | undefined>(undefined);
 
   const fetchStatus = async () => {
-      if (!user) return;
-      // Get all orders, pick first (latest)
-      const orders = await api.data.getOrders(user.id);
-      if (orders.length > 0) {
-          setLatestOrder(orders[0]);
+    if (!user) return;
+    setLoading(true);
+
+    const { data: request, error: requestError } = await supabase
+      .from('pedidos_maestros')
+      .select('*, solicitudes_entrega(producto_id)')
+      .eq('socio_id', user.id)
+      .in('estado_maestro', ['pendiente', 'en_camino'])
+      .order('fecha_creacion', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (request) {
+      const productIds = request.solicitudes_entrega?.map((s: any) => s.producto_id) || [];
+      
+      const { data: products, error: productsError } = await supabase
+        .from('golden_congelados')
+        .select('*')
+        .in('id', productIds)
+        .neq('estado', 'entregado');
+
+      if (products && products.length > 0) {
+        const orderData = {
+          ...request,
+          id: request.id_pedido,
+          status: request.estado_maestro === 'pendiente' ? 'pending' : 
+                  request.estado_maestro === 'en_camino' ? 'picked_up' : 
+                  request.estado_maestro === 'entregado' ? 'delivered' : 'pending',
+          items: products,
+          repartidor_id: request.operador_id,
+        };
+        setLatestOrder(orderData as Order);
+
+        if (orderData.repartidor_id) {
+          const { data: repartidorData } = await supabase
+            .from('staff_credenciales')
+            .select('nombre_operador, telefono_contacto, foto_url')
+            .eq('id', orderData.repartidor_id)
+            .single();
+          if (repartidorData) {
+            setRepartidor({
+              nombre: repartidorData.nombre_operador,
+              telefono: repartidorData.telefono_contacto,
+              foto_url: repartidorData.foto_url
+            } as any);
+          }
+        }
+      } else {
+        setLatestOrder(null);
       }
-      setLoading(false);
+    } else {
+      setLatestOrder(null);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchStatus();
-    // Poll for status updates every 5 seconds
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
+    if (user) {
+      fetchStatus();
+
+      const channel = supabase
+        .channel(`pedidos_maestros:${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pedidos_maestros', filter: `socio_id=eq.${user.id}` },
+          (payload) => {
+            console.log('Change received!', payload);
+            fetchStatus();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user]);
 
   // Status mapping to steps
@@ -95,48 +160,14 @@ export const OrderTracking: React.FC = () => {
                     </div>
 
                     {/* Timeline */}
-                    <div className="relative pl-4 space-y-0 mb-10">
-                        {/* Continuous Vertical Line */}
-                        <div className="absolute left-[27px] top-4 bottom-8 w-[2px] bg-gray-100 dark:bg-white/5 rounded-full"></div>
-                        
-                        {/* Active Progress Fill Line */}
-                        <div 
-                            className="absolute left-[27px] top-4 w-[2px] bg-gold-400 shadow-[0_0_10px_#D4AF37] z-0 transition-all duration-1000 ease-out rounded-full"
-                            style={{ height: `${Math.min((currentStep - 1) * 33, 100)}%` }}
-                        ></div>
-
-                        {steps.map((s, index) => {
-                            const isActive = currentStep === s.id;
-                            const isCompleted = currentStep > s.id;
-                            const isPending = currentStep < s.id;
-
-                            return (
-                                <div key={s.id} className="relative z-10 flex items-start gap-5 mb-8 last:mb-0 group min-h-[48px]">
-                                    
-                                    {/* Icon Indicator */}
-                                    <div className={`
-                                        w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 border
-                                        ${isActive 
-                                            ? 'bg-black dark:bg-white text-white dark:text-black border-gold-400 shadow-[0_0_20px_rgba(212,175,55,0.3)] scale-110' 
-                                            : isCompleted 
-                                                ? 'bg-gold-400 text-black border-gold-400'
-                                                : 'bg-gray-50 dark:bg-white/5 text-gray-300 dark:text-gray-600 border-gray-100 dark:border-white/5'
-                                        }
-                                    `}>
-                                        {isCompleted ? <Check size={20} strokeWidth={3} /> : s.icon}
-                                    </div>
-
-                                    {/* Text Content */}
-                                    <div className={`pt-2 transition-all duration-500 ${isPending ? 'opacity-30' : 'opacity-100'}`}>
-                                        <h3 className={`font-bold uppercase tracking-widest text-xs mb-0.5 ${isActive ? 'text-gold-600 dark:text-gold-400' : 'text-gray-900 dark:text-white'}`}>
-                                            {s.label}
-                                        </h3>
-                                        <p className="text-xs text-gray-500 font-medium">{s.desc}</p>
-                                    </div>
-
-                                </div>
-                            );
-                        })}
+                    <div className="mb-10">
+                      <Timeline status={
+                        latestOrder.status === 'pending' ? 'pendiente' :
+                        latestOrder.status === 'processing' ? 'preparando' :
+                        latestOrder.status === 'ready' ? 'preparando' :
+                        latestOrder.status === 'picked_up' ? 'en_camino' :
+                        latestOrder.status === 'delivered' ? 'entregado' : 'pendiente'
+                      } repartidor={repartidor} />
                     </div>
 
                     {/* Divider */}
