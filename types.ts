@@ -26,7 +26,6 @@ export interface User {
   address_street?: string;
   address_number?: string;
   sector?: string;
-  direccion_alternativa?: any;
 }
 
 export interface SocioBenefit {
@@ -162,8 +161,8 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: OrderStatus;
-  delivery_method: 'standard' | 'express' | 'delivery';
-  payment_method: 'balance' | 'card' | 'points';
+  delivery_method: 'standard' | 'express';
+  payment_method: 'balance' | 'card';
   created_at: string;
   driver_id?: string;
 }

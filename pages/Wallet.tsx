@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, QrCode, X, History, 
   Check, Keyboard, ShieldCheck,
-  ChevronRight, Loader2, Camera, AlertTriangle,
-  Activity
+  ChevronRight, Loader2, Camera, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { supabase } from '../services/supabaseClient';
 
-declare const Html5Qrcode: any;
+declare const jsQR: any;
 
 type AppStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -28,18 +27,27 @@ export const Wallet: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [recentRecharges, setRecentRecharges] = useState<any[]>([]);
 
-  const scannerRef = useRef<any>(null);
   const isQuerying = useRef(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const requestRef = useRef<number | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const isScanning = useRef(false);
 
-  const stopMedia = useCallback(async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-        scannerRef.current = null;
-      } catch (e) {
-        console.warn("Error stopping scanner", e);
-        scannerRef.current = null;
-      }
+  const stopMedia = useCallback(() => {
+    isScanning.current = false;
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+      });
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
   }, []);
 
@@ -57,7 +65,6 @@ export const Wallet: React.FC = () => {
     const cleanPin = targetPin.trim().toUpperCase();
     if (!cleanPin || isQuerying.current) return;
     
-    setInputMode('none');
     setAppStatus('loading');
     setErrorMsg(null);
     isQuerying.current = true;
@@ -65,7 +72,7 @@ export const Wallet: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('tarjetas_golden')
-        .select('*')
+        .select('id, codigo_pin, valor_punto, estado, perfil_id')
         .eq('codigo_pin', cleanPin)
         .maybeSingle();
 
@@ -77,23 +84,18 @@ export const Wallet: React.FC = () => {
         return;
       }
 
-      const statusActual = (data.estado || '').toString().trim().toLowerCase();
+      const statusActual = (data.estado || '').toLowerCase();
 
-      // REGLA DE ORO: Si el estado es 'activa', se permite el canje inmediatamente.
-      if (statusActual === 'activa') {
-        setCardData(data);
-        setAppStatus('success');
-      }
-      else if (statusActual === 'usada') {
+      if (statusActual === 'usada' || statusActual === 'cobrada' || data.perfil_id) {
         setErrorMsg("OPERACIÓN DENEGADA: ESTE PIN YA FUE LIQUIDADO.");
         setAppStatus('error');
       } 
-      else if (statusActual === 'en_calle') {
-        setErrorMsg("TARJETA EN CALLE: REQUIERE ACTIVACIÓN COMERCIAL.");
-        setAppStatus('error');
+      else if (statusActual === 'activada') {
+        setCardData(data);
+        setAppStatus('success');
       }
       else {
-        setErrorMsg(`ESTADO ACTUAL: ${statusActual.toUpperCase()}. REQUIERE REVISIÓN.`);
+        setErrorMsg(`TARJETA ${statusActual.toUpperCase()}. REQUIERE ACTIVACIÓN COMERCIAL.`);
         setAppStatus('error');
       }
 
@@ -120,9 +122,7 @@ export const Wallet: React.FC = () => {
 
       if (rpcError) throw rpcError;
 
-      // Cambiamos el estado a 'idle' inmediatamente para que el overlay solo muestre el successMsg
-      setAppStatus('idle');
-      setSuccessMsg("PROCESO EXITOSO");
+      setSuccessMsg("¡Recarga Exitosa! Capital liquidado en tu bóveda.");
       
       await refreshProfile(); 
       if (user?.id) {
@@ -134,341 +134,225 @@ export const Wallet: React.FC = () => {
 
       setTimeout(() => {
         factoryReset();
-        setTimeout(() => setSuccessMsg(null), 3000);
-      }, 2000);
+        setTimeout(() => setSuccessMsg(null), 4000);
+      }, 1500);
 
     } catch (err: any) {
       console.error("RPC_REJECTED_DETAILS:", err);
-      setErrorMsg(err.message || "FALLO EN NODO DE TESORERÍA");
+      setErrorMsg(err.message || "ERROR CRÍTICO EN NODO DE TESORERÍA.");
       setAppStatus('error');
     } finally {
       isQuerying.current = false;
     }
   };
 
-  const handleScanSuccess = async (qrResult: string) => {
-    const rawDetection = qrResult.trim().toUpperCase();
-    if (!rawDetection) return;
-    
-    if (navigator.vibrate) navigator.vibrate(150);
-    setPinInput(rawDetection);
-    await stopMedia();
-    setInputMode('none');
-    verifyPin(rawDetection);
-  };
+  const scanFrame = useCallback(() => {
+    if (!isScanning.current || !videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA && ctx) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+      if (code && code.data) {
+        const rawDetection = code.data.trim().toUpperCase();
+        isScanning.current = false;
+        if (navigator.vibrate) navigator.vibrate(150);
+        setPinInput(rawDetection);
+        stopMedia();
+        verifyPin(rawDetection);
+        return;
+      }
+    }
+    if (isScanning.current) requestRef.current = requestAnimationFrame(scanFrame);
+  }, [stopMedia]);
 
   const startCamera = async () => {
     setErrorMsg(null);
-    await stopMedia();
+    stopMedia();
     setInputMode('camera');
     
-    requestAnimationFrame(async () => {
-      try {
-        const html5QrCode = new Html5Qrcode("reader");
-        scannerRef.current = html5QrCode;
-        
-        const config = { 
-          fps: 15, 
-          qrbox: { width: 280, height: 280 },
-          aspectRatio: 1.0
-        };
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" }, 
+        audio: false 
+      });
 
-        try {
-          await html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            handleScanSuccess, 
-            () => {}
-          );
-        } catch (e) {
-          await html5QrCode.start(
-            { video: true }, 
-            config, 
-            handleScanSuccess, 
-            () => {}
-          );
-        }
-      } catch (err) {
-        console.error("Scanner init error", err);
-        setErrorMsg("ERROR DE HARDWARE: No se pudo iniciar el sensor óptico.");
-        setInputMode('none');
+      streamRef.current = stream;
+      isScanning.current = true;
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(e => console.error("Video play error", e));
+          requestRef.current = requestAnimationFrame(scanFrame);
+        };
       }
-    });
+    } catch (err) {
+      setErrorMsg("ERROR DE HARDWARE: Permisos de cámara denegados.");
+      setInputMode('none');
+    }
   };
 
   useEffect(() => {
     if (user?.id && user.id !== 'guest') {
       api.data.getLastRecharges(user.id).then(setRecentRecharges);
     }
-    return () => { stopMedia(); };
+    return () => stopMedia();
   }, [user, stopMedia]);
 
   return (
     <div className="min-h-screen bg-transparent text-white font-sans pb-40 overflow-x-hidden text-left selection:bg-gold-400 relative">
       
-      {/* ATMÓSFERA LUMÍNICA - REFINADA */}
+      {/* ATMÓSFERA LUMÍNICA - WALLET (Inversión cromática: Oro Top-Left, Blanco Bottom-Right) */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-full h-[70vh] opacity-[0.2]"
-               style={{ background: 'radial-gradient(circle at 100% 0%, rgba(212,175,55,0.15) 0%, transparent 70%)', filter: 'blur(140px)' }}></div>
-          <div className="absolute top-0 left-0 w-[60vw] h-[40vh] opacity-[0.05]"
-               style={{ background: 'radial-gradient(circle at 0% 0%, white 0%, transparent 60%)', filter: 'blur(100px)' }}></div>
+          <div className="absolute top-0 left-0 w-[80vw] h-[50vh] opacity-[0.12]"
+               style={{ background: 'radial-gradient(circle at 0% 0%, #D4AF37 0%, transparent 70%)', filter: 'blur(100px)' }}></div>
+          <div className="absolute bottom-0 right-0 w-[70vw] h-[60vh] opacity-[0.25]"
+               style={{ background: 'radial-gradient(circle at 100% 100%, white 0%, transparent 60%)', filter: 'blur(90px)' }}></div>
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
       </div>
-
-      <div className={`max-w-xl mx-auto px-8 relative z-10 transition-all duration-1000 ${(appStatus !== 'idle' || successMsg) ? 'blur-3xl scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <header className="pt-10 flex items-center justify-start mb-12">
-            <button onClick={() => navigate('/dashboard')} className="p-3 -ml-3 text-white/20 hover:text-white active:scale-90 transition-all hover:bg-white/5 rounded-full">
-                <ArrowLeft size={24} strokeWidth={1.5} />
+      
+      <div className="max-w-xl mx-auto px-6 relative z-10">
+        <header className="pt-8 flex items-center justify-start mb-10">
+            <button onClick={() => navigate('/dashboard')} className="p-4 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl active:scale-90">
+                <ArrowLeft size={24} />
             </button>
         </header>
 
-        <div className="mb-16 space-y-12">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 opacity-40">
-              <div className="w-6 h-[1px] bg-gold-400"></div>
-              <span className="text-[9px] font-black uppercase tracking-[0.5em] text-white">RECARGA_DE_ACTIVOS</span>
-            </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white uppercase leading-[0.8]">
-              GOLDEN <br/> <span className="text-gold-400">PUNTOS</span>
-            </h1>
-          </div>
+        <div className="mb-10 animate-fade-in">
+          <p className="text-[10px] text-gold-400 font-black uppercase tracking-[0.6em] mb-3">SISTEMA DE AUDITORÍA</p>
+          <h1 className="font-heading text-4xl md:text-5xl font-black tracking-tighter text-white uppercase leading-none">
+            Golden <span className="text-gold-metallic">Wallet</span>
+          </h1>
           
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gold-400/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-            <div className="p-12 bg-white/[0.02] border border-white/5 relative overflow-hidden backdrop-blur-sm">
-              <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none">
-                <ShieldCheck size={120} strokeWidth={1} />
-              </div>
-              <p className="text-[9px] text-white/20 uppercase tracking-[0.5em] mb-8 font-black">CAPITAL_GP_DISPONIBLE</p>
-              <div className="flex flex-col items-start">
-                <h2 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-none font-mono">
-                  {Math.round(pointsBalance).toLocaleString()}
-                </h2>
-                <div className="flex items-center gap-3 mt-6">
-                  <div className="w-2 h-2 rounded-full bg-gold-400 animate-pulse"></div>
-                  <span className="text-[10px] font-black text-gold-400 uppercase tracking-[0.4em]">Sincronizado con Nodo Maestro</span>
+          <div className="mt-8 p-10 bg-white/[0.02] border border-white/5 rounded-none shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold-400/5 blur-[50px] -mr-16 -mt-16"></div>
+            <p className="text-[8px] text-gray-600 uppercase tracking-[0.5em] mb-4 font-black">CAPITAL_GP_LIQUIDADO</p>
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-5xl md:text-7xl font-mono font-black tracking-tighter text-white leading-none">
+                {pointsBalance.toLocaleString()}
+              </h2>
+              <span className="text-xl font-heading font-bold text-gold-400 opacity-30">GP</span>
+            </div>
+          </div>
+        </div>
+
+        {successMsg && (
+          <div className="mb-8 p-6 bg-green-500/10 border border-green-500/20 flex items-center gap-4 animate-enter-screen">
+            <Check size={20} className="text-green-500" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-green-500">{successMsg}</p>
+          </div>
+        )}
+
+        {appStatus === 'idle' && inputMode === 'none' && (
+          <div className="grid grid-cols-1 gap-4">
+            <button onClick={startCamera} className="w-full p-10 bg-gold-400 text-black flex items-center justify-between active:scale-[0.98] transition-all shadow-2xl group">
+                <div className="flex items-center gap-8">
+                    <QrCode size={32} />
+                    <div className="text-left">
+                      <span className="text-[12px] font-black uppercase tracking-[0.5em] block mb-1">CAPTURAR QR</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">IDENTIFICACIÓN ÓPTICA</span>
+                    </div>
                 </div>
-              </div>
-            </div>
+                <ChevronRight size={18} className="opacity-40" />
+            </button>
+
+            <button onClick={() => setInputMode('keyboard')} className="w-full p-10 bg-white/5 border border-white/10 text-white flex items-center justify-between active:scale-[0.98] transition-all">
+                <div className="flex items-center gap-8">
+                    <Keyboard size={32} className="text-gray-500" />
+                    <div className="text-left">
+                      <span className="text-[12px] font-black uppercase tracking-[0.5em] block mb-1">INGRESO PIN</span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-gray-700">ENTRADA MAESTRA</span>
+                    </div>
+                </div>
+                <ChevronRight size={18} className="opacity-20" />
+            </button>
           </div>
-        </div>
+        )}
 
-        <div className="grid grid-cols-1 gap-6">
-          <button 
-            onClick={startCamera} 
-            className="group relative p-10 bg-gold-400 hover:bg-white text-black transition-all duration-500 active:scale-[0.98] overflow-hidden shadow-[0_20px_40px_rgba(212,175,55,0.15)]"
-          >
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <QrCode size={80} strokeWidth={1} />
-            </div>
-            <div className="relative z-10 flex items-center gap-8">
-              <div className="w-16 h-16 bg-black/5 flex items-center justify-center rounded-2xl">
-                <QrCode size={32} strokeWidth={2} />
-              </div>
-              <div className="text-left">
-                <span className="text-lg font-black uppercase tracking-[0.1em] block leading-none">CAPTURAR_QR</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 mt-2 block">ACTIVACIÓN POR SENSOR ÓPTICO</span>
-              </div>
-            </div>
-          </button>
+        {appStatus === 'loading' && (
+          <div className="flex flex-col items-center justify-center py-24 gap-6 animate-pulse">
+             <div className="w-16 h-16 border-2 border-gold-400/20 border-t-gold-400 animate-spin"></div>
+             <p className="text-[9px] text-gold-400 uppercase tracking-[0.8em] font-black">AUDITANDO NODO...</p>
+          </div>
+        )}
 
-          <button 
-            onClick={() => setInputMode('keyboard')} 
-            className="group relative p-10 bg-white/[0.03] border border-white/5 hover:border-white/20 text-white transition-all duration-500 active:scale-[0.98] overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-              <Keyboard size={80} strokeWidth={1} />
-            </div>
-            <div className="relative z-10 flex items-center gap-8">
-              <div className="w-16 h-16 bg-white/5 flex items-center justify-center rounded-2xl group-hover:bg-white group-hover:text-black transition-all duration-500">
-                <Keyboard size={32} strokeWidth={1.5} />
-              </div>
-              <div className="text-left">
-                <span className="text-lg font-black uppercase tracking-[0.1em] block leading-none">INGRESAR_PIN</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest opacity-20 mt-2 block">ENTRADA MANUAL DE IDENTIDAD</span>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
+        {appStatus === 'success' && cardData && (
+          <div className="animate-enter-screen border border-green-500/40 bg-green-500/[0.03] p-10 shadow-2xl relative">
+             <ShieldCheck size={44} className="text-green-500 mb-8" />
+             <div className="mb-10">
+               <p className="text-[8px] text-gray-500 uppercase tracking-[0.6em] mb-4 font-black">VALOR_ACREDITABLE</p>
+               <h2 className="text-6xl font-mono font-black text-white tracking-tighter leading-none">{cardData.valor_punto.toLocaleString()} GP</h2>
+             </div>
+             <div className="space-y-4">
+               <button onClick={confirmRecharge} className="w-full py-6 bg-green-500 text-black font-black uppercase tracking-[0.5em] text-[11px] active:scale-95 shadow-xl">AUTORIZAR CARGA</button>
+               <button onClick={factoryReset} className="w-full py-4 text-gray-700 hover:text-white text-[9px] font-black uppercase tracking-widest">CANCELAR</button>
+             </div>
+          </div>
+        )}
 
-      {/* OVERLAYS DE ESTADO - REDISEÑO PREMIUM */}
-      {(appStatus !== 'idle' || successMsg || inputMode === 'keyboard') && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-8 bg-black/95 backdrop-blur-3xl animate-fade-in">
-          
-          {inputMode === 'keyboard' && (
-            <div className="max-w-md w-full animate-enter-screen text-center space-y-16">
-               <div className="space-y-4">
-                 <div className="flex items-center justify-center gap-3 opacity-40">
-                   <div className="w-6 h-[1px] bg-gold-400"></div>
-                   <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white">PROTOCOLO_MANUAL</span>
-                 </div>
-                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter">INGRESE_CÓDIGO_PIN</h2>
-               </div>
-               
-               <div className="relative">
-                 <textarea 
-                    autoFocus 
-                    rows={1}
-                    value={pinInput} 
-                    onChange={(e) => setPinInput(e.target.value.toUpperCase())} 
-                    placeholder="•••• •••• ••••" 
-                    className="w-full bg-transparent text-5xl md:text-6xl font-mono text-center tracking-[0.2em] text-white focus:outline-none placeholder:text-white/5 uppercase resize-none overflow-hidden break-all leading-tight font-black" 
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = 'auto';
-                      target.style.height = target.scrollHeight + 'px';
-                    }}
-                 />
-                 <div className="w-full h-[1px] bg-white/10 mt-8"></div>
-               </div>
+        {appStatus === 'error' && (
+          <div className="animate-fade-in border border-red-500/40 bg-red-500/[0.03] p-10 text-center">
+             <AlertTriangle size={52} className="text-red-500 mx-auto mb-10" />
+             <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.1em] mb-12 leading-relaxed font-bold">{errorMsg}</p>
+             <button onClick={factoryReset} className="w-full py-6 bg-white text-black text-[9px] font-black uppercase tracking-widest active:scale-[0.95]">REINTENTAR</button>
+          </div>
+        )}
 
-               <div className="space-y-6">
-                 <button 
-                    onClick={() => verifyPin(pinInput)} 
-                    disabled={pinInput.length < 3} 
-                    className="w-full py-8 bg-white text-black font-black uppercase tracking-[0.6em] text-[13px] active:scale-95 disabled:opacity-10 shadow-[0_20px_40px_rgba(255,255,255,0.1)] transition-all"
-                 >
-                   VERIFICAR_IDENTIDAD
-                 </button>
-                 
-                 <button 
-                    onClick={factoryReset} 
-                    className="text-[11px] font-black text-white/20 hover:text-white uppercase tracking-[0.5em] transition-all"
-                 >
-                   CANCELAR_OPERACIÓN
-                 </button>
-               </div>
-            </div>
-          )}
-
-          {appStatus === 'loading' && (
-            <div className="flex flex-col items-center justify-center gap-12 text-center">
-               <div className="relative w-32 h-32">
-                 <div className="absolute inset-0 border border-white/5 rounded-full"></div>
-                 <div className="absolute inset-0 border-t-2 border-gold-400 rounded-full animate-spin"></div>
-                 <div className="absolute inset-0 flex items-center justify-center">
-                   <Activity size={32} className="text-gold-400 animate-pulse" />
-                 </div>
-               </div>
-               <div className="space-y-4">
-                 <p className="text-[12px] text-gold-400 uppercase tracking-[1.5em] font-black ml-[1.5em]">AUDITANDO_NODO</p>
-                 <p className="text-[9px] text-white/20 uppercase tracking-[0.8em] font-bold">SINCRONIZANDO CON EL LIBRO MAYOR</p>
-               </div>
-            </div>
-          )}
-
-          {appStatus === 'success' && cardData && (
-            <div className="max-w-md w-full bg-[#050505] border border-white/10 p-8 md:p-16 shadow-[0_50px_100px_rgba(0,0,0,0.8)] relative animate-enter-screen text-center overflow-hidden">
-               <div className="absolute top-0 right-0 p-4 md:p-8 opacity-[0.02] pointer-events-none">
-                 <Check size={150} strokeWidth={1} className="md:w-[200px] md:h-[200px]" />
-               </div>
-               
-               <div className="w-20 h-20 md:w-24 md:h-24 bg-green-500/5 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-12 border border-green-500/20 relative z-10">
-                 <ShieldCheck size={40} className="text-green-500 md:w-12 md:h-12" strokeWidth={1.5} />
-               </div>
-               
-               <div className="mb-10 md:mb-16 relative z-10">
-                 <p className="text-[9px] md:text-[10px] text-white/30 uppercase tracking-[0.5em] md:tracking-[0.8em] mb-4 md:mb-8 font-black">VALOR_ACREDITABLE</p>
-                 <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-none font-mono break-words">{Math.round(cardData.valor_punto).toLocaleString()}</h2>
-                 <p className="text-xs md:text-sm font-black text-gold-400 uppercase tracking-[0.3em] md:tracking-[0.5em] mt-4 md:mt-6">GOLDEN_PUNTOS</p>
-               </div>
-               
-               <div className="space-y-4 md:space-y-6 relative z-10">
-                 <button 
-                  onClick={confirmRecharge} 
-                  className="w-full py-5 md:py-7 bg-green-500 text-black font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-[12px] md:text-[13px] active:scale-95 shadow-[0_20px_40px_rgba(34,197,94,0.3)] transition-all"
-                 >
-                  AUTORIZAR
-                 </button>
-                 <button 
-                  onClick={factoryReset} 
-                  className="w-full py-4 text-white/40 hover:text-white text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] transition-all"
-                 >
-                  CANCELAR
-                 </button>
-               </div>
-            </div>
-          )}
-
-          {appStatus === 'error' && (
-            <div className="max-w-md w-full bg-[#050505] border border-white/10 p-16 text-center shadow-[0_50px_100px_rgba(0,0,0,0.8)] animate-enter-screen">
-               <div className="w-24 h-24 bg-red-500/5 rounded-full flex items-center justify-center mx-auto mb-12 border border-red-500/20">
-                 <AlertTriangle size={48} className="text-red-500" strokeWidth={1.5} />
-               </div>
-               <div className="mb-16">
-                 <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.5em] mb-4">ERROR_DE_SISTEMA</p>
-                 <p className="text-lg font-black text-white uppercase tracking-tight leading-tight">{errorMsg}</p>
-               </div>
-               <button 
-                onClick={factoryReset} 
-                className="w-full py-7 bg-white text-black text-[12px] font-black uppercase tracking-[0.6em] active:scale-[0.95] shadow-2xl transition-all"
-               >
-                REINTENTAR_CONEXIÓN
-               </button>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="max-w-md w-full bg-[#050505] border border-white/10 p-20 text-center shadow-[0_80px_150px_rgba(0,0,0,0.9)] animate-enter-screen">
-               <div className="w-32 h-32 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-16 border border-green-500/30 shadow-[0_0_60px_rgba(34,197,94,0.15)]">
-                 <Check size={64} className="text-green-500" strokeWidth={3} />
-               </div>
-               <div className="space-y-6">
-                 <h2 className="text-3xl font-black text-green-500 uppercase tracking-tighter leading-none">{successMsg}</h2>
-                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-[1px] bg-green-500/20"></div>
-                    <p className="text-[10px] text-white/20 uppercase tracking-[1em] font-black ml-[1em]">BÓVEDA_ACTUALIZADA</p>
-                 </div>
-               </div>
-            </div>
-          )}
-
-        </div>
-      )}
+        {inputMode === 'keyboard' && appStatus === 'idle' && (
+          <div className="animate-enter-screen p-10 bg-white/[0.03] border border-white/10">
+             <div className="flex justify-between items-center mb-10">
+               <span className="text-[8px] text-gold-400 uppercase tracking-[0.8em] font-black">VERIFICACIÓN_PIN</span>
+               <button onClick={factoryReset} className="text-gray-700 hover:text-white transition-colors"><X size={24}/></button>
+             </div>
+             <input 
+                type="text" 
+                autoFocus 
+                value={pinInput} 
+                onChange={(e) => setPinInput(e.target.value.toUpperCase())} 
+                placeholder="CÓDIGO DE TARJETA" 
+                className="w-full bg-transparent text-3xl font-mono text-center tracking-[0.1em] text-white focus:outline-none placeholder:text-white/5 uppercase leading-tight mb-12 border-b border-white/10 pb-4" 
+             />
+             <button onClick={() => verifyPin(pinInput)} disabled={pinInput.length < 3} className="w-full py-7 bg-white text-black font-black uppercase tracking-[0.5em] text-[11px] active:scale-95 disabled:opacity-20 shadow-2xl">VERIFICAR CÓDIGO</button>
+          </div>
+        )}
 
         {inputMode === 'camera' && appStatus === 'idle' && (
           <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center animate-fade-in overflow-hidden">
-            <div className="relative w-full h-full">
-                <div id="reader" className="w-full h-full grayscale brightness-[0.7] contrast-125"></div>
-                
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ boxShadow: '0 0 0 100vmax rgba(0,0,0,0.95)' }}>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 md:w-[450px] md:h-[450px] border border-white/5">
-                      <div className="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-400"></div>
-                      <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-gold-400"></div>
-                      <div className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-gold-400"></div>
-                      <div className="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-400"></div>
-                      <div className="absolute left-0 right-0 h-[3px] bg-gold-400 shadow-[0_0_35px_#D4AF37] animate-scan-cycle"></div>
-                    </div>
-                </div>
-
-                <div className="absolute top-20 left-0 right-0 text-center z-20 space-y-2">
-                  <p className="text-[11px] text-gold-400 font-black uppercase tracking-[1em] ml-[1em]">ESCANEANDO_CÓDIGO</p>
-                  <p className="text-[8px] text-white/30 uppercase tracking-[0.5em]">POSICIONE EL QR DENTRO DEL MARCO</p>
+            <video 
+              ref={videoRef} 
+              className="absolute inset-0 w-full h-full object-cover z-0" 
+              playsInline
+              muted
+              autoPlay
+            />
+            <canvas ref={canvasRef} className="hidden" />
+            
+            <div className="absolute inset-0 z-10 pointer-events-none" style={{ boxShadow: '0 0 0 100vmax rgba(0,0,0,0.85)' }}>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 border border-white/10">
+                  <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-gold-400"></div>
+                  <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-gold-400"></div>
+                  <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-gold-400"></div>
+                  <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-gold-400"></div>
+                  <div className="absolute left-0 right-0 h-[1px] bg-gold-400/40 shadow-[0_0_15px_#D4AF37] animate-scan-cycle"></div>
                 </div>
             </div>
             
             <button 
               onClick={factoryReset} 
-              className="absolute bottom-24 z-30 w-24 h-24 bg-white/5 border border-white/10 text-white flex items-center justify-center backdrop-blur-3xl rounded-full active:scale-90 shadow-2xl transition-all hover:bg-white/10"
+              className="absolute bottom-20 z-30 w-16 h-16 bg-black/50 border border-white/10 text-white flex items-center justify-center backdrop-blur-xl rounded-full active:scale-90 shadow-2xl"
             >
-              <X size={40} strokeWidth={1.5} />
+              <X size={28} />
             </button>
           </div>
         )}
-
-        <style dangerouslySetInnerHTML={{ __html: `
-          #reader { background: black !important; border: none !important; }
-          #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
-          @keyframes scan-cycle {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-          }
-          .animate-scan-cycle {
-            animation: scan-cycle 2.5s ease-in-out infinite;
-            position: absolute;
-          }
-        `}} />
       </div>
+    </div>
   );
 };

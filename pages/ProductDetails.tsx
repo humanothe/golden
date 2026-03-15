@@ -62,8 +62,8 @@ export const ProductDetails: React.FC = () => {
   // Notification Toast Component
   const NotificationToast = () => (
       <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 ${showNotification ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
-        <div className="bg-white dark:bg-black dark:bg-black dark:bg-white text-white dark:text-black dark:text-white dark:text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gold-400/30">
-            <div className="bg-green-500 rounded-full p-1 text-black dark:text-white">
+        <div className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gold-400/30">
+            <div className="bg-green-500 rounded-full p-1 text-white">
                 <Check size={12} strokeWidth={3} />
             </div>
             <span className="text-xs font-bold uppercase tracking-wider">Agregado al carrito</span>
@@ -76,7 +76,7 @@ export const ProductDetails: React.FC = () => {
   // ==========================================
   if (isGoldenExclusive) {
     return (
-        <div className="min-h-screen bg-white dark:bg-white dark:bg-black text-black dark:text-white font-sans flex flex-col md:flex-row animate-fade-in">
+        <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-sans flex flex-col md:flex-row animate-fade-in">
            <NotificationToast />
 
            {/* LEFT: IMMERSIVE IMAGE */}
@@ -90,14 +90,14 @@ export const ProductDetails: React.FC = () => {
                
                <button 
                     onClick={() => navigate(-1)} 
-                    className="absolute top-6 left-6 z-20 p-3 bg-black/10 dark:bg-white/10 backdrop-blur-md hover:bg-black/20 dark:bg-white/20 rounded-full transition-colors text-black dark:text-white"
+                    className="absolute top-6 left-6 z-20 p-3 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full transition-colors text-white"
                >
                     <ArrowLeft size={20} />
                </button>
            </div>
     
            {/* RIGHT: EDITORIAL DETAILS */}
-           <div className="w-full md:w-1/2 min-h-screen flex flex-col pt-10 px-8 pb-32 md:pb-10 relative bg-white dark:bg-white dark:bg-black">
+           <div className="w-full md:w-1/2 min-h-screen flex flex-col pt-10 px-8 pb-32 md:pb-10 relative bg-white dark:bg-black">
                
                {/* Header Info */}
                <div className="mb-10">
@@ -111,15 +111,15 @@ export const ProductDetails: React.FC = () => {
                     <h1 className="text-3xl md:text-5xl font-heading font-light uppercase tracking-tighter leading-none mb-6">
                         {product.name}
                     </h1>
-                    <div className="h-px w-20 bg-white dark:bg-black dark:bg-white mb-6"></div>
+                    <div className="h-px w-20 bg-black dark:bg-white mb-6"></div>
                     <p className="text-2xl font-mono font-medium">${product.price.toLocaleString()}</p>
                </div>
     
                {/* Accordion Details */}
-               <div className="flex-1 space-y-0 border-t border-gray-200 dark:border-black/10 dark:border-white/10">
+               <div className="flex-1 space-y-0 border-t border-gray-200 dark:border-white/10">
                    
                    {/* Description */}
-                   <div className="border-b border-gray-200 dark:border-black/10 dark:border-white/10">
+                   <div className="border-b border-gray-200 dark:border-white/10">
                        <button 
                         onClick={() => toggleSection('desc')}
                         className="w-full py-6 flex justify-between items-center text-xs font-bold uppercase tracking-widest hover:text-gold-500 transition-colors"
@@ -135,7 +135,7 @@ export const ProductDetails: React.FC = () => {
                    </div>
     
                    {/* Shipping */}
-                   <div className="border-b border-gray-200 dark:border-black/10 dark:border-white/10">
+                   <div className="border-b border-gray-200 dark:border-white/10">
                        <button 
                         onClick={() => toggleSection('ship')}
                         className="w-full py-6 flex justify-between items-center text-xs font-bold uppercase tracking-widest hover:text-gold-500 transition-colors"
@@ -145,14 +145,14 @@ export const ProductDetails: React.FC = () => {
                        </button>
                        <div className={`overflow-hidden transition-all duration-500 ${openSection === 'ship' ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
                            <div className="space-y-4 pt-2">
-                               <div className="flex items-center gap-4 p-4 border border-gray-100 dark:border-black/5 dark:border-white/5 bg-gray-50 dark:bg-black/5 dark:bg-white/5">
+                               <div className="flex items-center gap-4 p-4 border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
                                    <Truck size={20} className="text-gold-500" />
                                    <div>
                                        <p className="text-xs font-bold uppercase">Golden Express</p>
                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Envío Prioritario 24h</p>
                                    </div>
                                </div>
-                               <div className="flex items-center gap-4 p-4 border border-gray-100 dark:border-black/5 dark:border-white/5 bg-gray-50 dark:bg-black/5 dark:bg-white/5">
+                               <div className="flex items-center gap-4 p-4 border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
                                    <ShieldCheck size={20} className="text-gold-500" />
                                    <div>
                                        <p className="text-xs font-bold uppercase">Autenticidad</p>
@@ -165,21 +165,21 @@ export const ProductDetails: React.FC = () => {
                </div>
     
                {/* Sticky Bottom Actions (Sharp, Square, Minimal) */}
-               <div className="fixed bottom-0 left-0 right-0 md:relative md:bg-transparent bg-white dark:bg-white dark:bg-black border-t md:border-t-0 border-gray-200 dark:border-black/10 dark:border-white/10 p-6 md:p-0 md:mt-12 z-30">
+               <div className="fixed bottom-0 left-0 right-0 md:relative md:bg-transparent bg-white dark:bg-black border-t md:border-t-0 border-gray-200 dark:border-white/10 p-6 md:p-0 md:mt-12 z-30">
                     <div className="flex flex-col gap-4">
                         {/* Quantity */}
                         <div className="flex justify-between items-center mb-2 md:mb-0">
                             <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Cantidad</span>
                             <div className="flex items-center border border-black dark:border-white rounded-none">
-                                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-black dark:hover:bg-white hover:text-black dark:hover:text-white hover:bg-black dark:hover:bg-white transition-colors"><Minus size={14} /></button>
+                                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"><Minus size={14} /></button>
                                  <span className="w-10 text-center text-sm font-mono">{quantity}</span>
-                                 <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-black dark:hover:bg-white hover:text-black dark:hover:text-white transition-colors"><Plus size={14} /></button>
+                                 <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-black hover:text-white dark:hover:text-white dark:hover:text-black transition-colors"><Plus size={14} /></button>
                             </div>
                         </div>
     
                         <button 
                             onClick={handleAddToCart}
-                            className="w-full bg-white dark:bg-black dark:bg-black dark:bg-white text-white dark:text-black dark:text-white dark:text-black py-5 text-xs font-bold uppercase tracking-[0.2em] hover:bg-gold-400 dark:hover:bg-gold-400 hover:text-black transition-all duration-300 flex justify-center items-center gap-4"
+                            className="w-full bg-black dark:bg-white text-white dark:text-black py-5 text-xs font-bold uppercase tracking-[0.2em] hover:bg-gold-400 dark:hover:bg-gold-400 hover:text-black transition-all duration-300 flex justify-center items-center gap-4"
                         >
                             <span>Agregar a la Bolsa</span>
                             <span className="opacity-50">|</span>
@@ -213,15 +213,15 @@ export const ProductDetails: React.FC = () => {
             <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10">
                 <button 
                     onClick={() => navigate(-1)} 
-                    className="p-3 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full text-black dark:text-white hover:bg-white/30 transition-colors shadow-lg"
+                    className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors shadow-lg"
                 >
                     <ArrowLeft size={20} />
                 </button>
                 <div className="flex gap-3">
-                     <button className="p-3 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full text-black dark:text-white hover:bg-white/30 transition-colors shadow-lg">
+                     <button className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors shadow-lg">
                         <Heart size={20} />
                     </button>
-                    <button className="p-3 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full text-black dark:text-white hover:bg-white/30 transition-colors shadow-lg">
+                    <button className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors shadow-lg">
                         <Share2 size={20} />
                     </button>
                 </div>
@@ -233,7 +233,7 @@ export const ProductDetails: React.FC = () => {
                     <img src={business.logo_url || business.image_url} alt={business.name} className="w-full h-full object-cover rounded-full" />
                 </div>
                 <div>
-                    <p className="text-black dark:text-white text-xs font-bold shadow-black drop-shadow-md">{business.name}</p>
+                    <p className="text-white text-xs font-bold shadow-black drop-shadow-md">{business.name}</p>
                     <div className="flex items-center text-gold-400 text-[10px] gap-1">
                         <Star size={10} fill="currentColor" /> {business.rating}
                     </div>
@@ -245,10 +245,10 @@ export const ProductDetails: React.FC = () => {
         <div className="relative -mt-6 rounded-t-[2.5rem] bg-white dark:bg-dark-900 px-6 pt-10 pb-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
             
             {/* Drag Handle (Visual Only) */}
-            <div className="w-12 h-1.5 bg-gray-200 dark:bg-black/10 dark:bg-white/10 rounded-full mx-auto mb-8"></div>
+            <div className="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mx-auto mb-8"></div>
 
             <div className="flex justify-between items-start mb-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-black dark:text-white leading-tight w-3/4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight w-3/4">
                     {product.name}
                 </h1>
                 <p className="text-xl font-bold text-green-600 dark:text-green-400">
@@ -262,11 +262,11 @@ export const ProductDetails: React.FC = () => {
 
             {/* Additional Info Tags */}
             <div className="flex gap-4 mb-8 overflow-x-auto no-scrollbar py-2">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-black/5 dark:bg-white/5 border border-gray-200 dark:border-black/5 dark:border-white/5 shrink-0">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 shrink-0">
                     <Clock size={16} className="text-gray-400" />
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{business.delivery_time || '30-45 min'}</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-black/5 dark:bg-white/5 border border-gray-200 dark:border-black/5 dark:border-white/5 shrink-0">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 shrink-0">
                     <MapPin size={16} className="text-gray-400" />
                     {/* Fix: Business type doesn't have zone, casting to any or using a safe fallback */}
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{(business as any).zone || 'Zona VIP'}</span>
@@ -279,9 +279,9 @@ export const ProductDetails: React.FC = () => {
 
             {/* Notes Section */}
             <div className="mb-24">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-black dark:text-white mb-3">Notas para el pedido</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Notas para el pedido</h3>
                 <textarea 
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-black/10 dark:border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-gold-400 focus:outline-none transition-all placeholder-gray-400"
+                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-gold-400 focus:outline-none transition-all placeholder-gray-400"
                     placeholder="Ej. Sin cebolla, término medio, envolver para regalo..."
                     rows={3}
                 ></textarea>
@@ -290,23 +290,23 @@ export const ProductDetails: React.FC = () => {
         </div>
 
         {/* Floating Bottom Bar (Rounded, Friendly) */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 z-40 bg-white/80 dark:bg-dark-900/90 backdrop-blur-md border-t border-gray-200 dark:border-black/5 dark:border-white/5">
+        <div className="fixed bottom-0 left-0 right-0 p-4 z-40 bg-white/80 dark:bg-dark-900/90 backdrop-blur-md border-t border-gray-200 dark:border-white/5">
             <div className="max-w-lg mx-auto flex items-center gap-4">
                 
                 {/* Quantity - Pill Shape */}
-                <div className="flex items-center gap-4 bg-gray-100 dark:bg-black/10 dark:bg-white/10 rounded-full px-4 py-3 h-14">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-gray-500 hover:text-black dark:hover:text-black dark:hover:text-white"><Minus size={18} /></button>
+                <div className="flex items-center gap-4 bg-gray-100 dark:bg-white/10 rounded-full px-4 py-3 h-14">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-gray-500 hover:text-black dark:hover:text-white"><Minus size={18} /></button>
                     <span className="font-bold text-lg min-w-[20px] text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="text-gray-500 hover:text-black dark:hover:text-black dark:hover:text-white"><Plus size={18} /></button>
+                    <button onClick={() => setQuantity(quantity + 1)} className="text-gray-500 hover:text-black dark:hover:text-white"><Plus size={18} /></button>
                 </div>
 
                 {/* Add Button - Colorful/Friendly */}
                 <button 
                     onClick={handleAddToCart}
-                    className="flex-1 bg-white dark:bg-black dark:bg-black dark:bg-white text-white dark:text-black dark:text-white dark:text-black rounded-full h-14 font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl flex justify-between items-center px-6"
+                    className="flex-1 bg-black dark:bg-white text-white dark:text-black rounded-full h-14 font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl flex justify-between items-center px-6"
                 >
                     <span>Agregar</span>
-                    <span className="bg-black/20 dark:bg-white/20 dark:bg-black/10 px-3 py-1 rounded-full text-xs">
+                    <span className="bg-white/20 dark:bg-black/10 px-3 py-1 rounded-full text-xs">
                         ${(product.price * quantity).toLocaleString()}
                     </span>
                 </button>

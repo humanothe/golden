@@ -19,22 +19,19 @@ export const Savings: React.FC = () => {
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-white via-white/95 to-green-50 dark:from-dark-950 dark:via-dark-900/95 dark:to-black z-0"></div>
 
-      <div className="relative z-10 pb-32">
-        <header className="pt-[env(safe-area-inset-top)] px-6 md:px-12 border-b border-white/10 sticky top-0 z-40 bg-black mb-8">
-            <div className="max-w-lg mx-auto pb-6 pt-6 flex items-center gap-4">
-                <button onClick={() => navigate('/dashboard')} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white">
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 className="font-heading text-2xl font-light text-white">Mis Ahorros</h1>
-            </div>
-        </header>
+      <div className="relative z-10 max-w-lg mx-auto px-6 py-8 pb-32">
+        <div className="flex items-center gap-4 mb-8">
+            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors">
+                <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
+            </button>
+            <h1 className="font-heading text-2xl font-light text-gray-900 dark:text-white">Mis Ahorros</h1>
+        </div>
 
-        <div className="max-w-lg mx-auto px-6">
-          <div className="glass-panel p-8 rounded-[2.5rem] bg-gradient-to-br from-green-500/90 to-emerald-700/90 text-black dark:text-white shadow-xl mb-8 relative overflow-hidden">
+        <div className="glass-panel p-8 rounded-[2.5rem] bg-gradient-to-br from-green-500/90 to-emerald-700/90 text-white shadow-xl mb-8 relative overflow-hidden">
              <div className="relative z-10">
                  <p className="text-green-100 text-xs font-bold uppercase tracking-widest mb-1">Total Ahorrado</p>
                  <h2 className="text-5xl font-heading font-bold mb-4">${savedAmount.toFixed(2)}</h2>
-                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full text-xs font-medium">
+                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium">
                      <TrendingUp size={14} /> Histórico Acumulado
                  </div>
              </div>
@@ -45,11 +42,10 @@ export const Savings: React.FC = () => {
         
         {/* Placeholder for future detailed savings history */}
         <div className="space-y-3">
-             <div className="glass-panel p-4 rounded-2xl bg-white/60 dark:bg-black/5 dark:bg-white/5 border border-gray-200 dark:border-black/5 dark:border-white/5 flex items-center justify-between opacity-70">
+             <div className="glass-panel p-4 rounded-2xl bg-white/60 dark:bg-white/5 border border-gray-200 dark:border-white/5 flex items-center justify-between opacity-70">
                  <p className="text-sm text-gray-500">El historial detallado de ahorros estará disponible próximamente.</p>
              </div>
         </div>
-      </div>
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ export const Partners: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen pb-40 animate-fade-in font-sans text-left overflow-x-hidden selection:bg-gold-400 selection:text-black bg-transparent relative">
+    <div className="min-h-screen p-6 lg:p-12 pb-40 animate-fade-in max-w-6xl mx-auto font-sans text-left overflow-x-hidden selection:bg-gold-400 selection:text-black bg-transparent relative">
         
         {/* ATMÓSFERA LUMÍNICA - PARTNERS (Laterales: Center-Left y Center-Right) */}
         <div className="fixed inset-0 z-0 pointer-events-none">
@@ -71,22 +71,21 @@ export const Partners: React.FC = () => {
         </div>
 
         <div className="relative z-10">
-            <header className="pt-[env(safe-area-inset-top)] px-6 md:px-12 border-b border-white/10 sticky top-0 z-40 bg-black mb-8">
-                <div className="max-w-[1400px] mx-auto pb-6 pt-6 flex justify-between items-end">
+            <header className="mb-8 border-b border-white/5 pb-6">
+                <div className="flex justify-between items-end">
                     <div className="space-y-1">
                         <p className="text-gold-400 text-[7px] font-black uppercase tracking-[0.6em] opacity-60">ECOSISTEMA DE PRIVILEGIOS</p>
                         <h1 className="font-heading text-3xl md:text-4xl text-white uppercase tracking-tighter leading-none">
                             NEGOCIOS <span className="text-gold-metallic">ALIADOS</span>
                         </h1>
                     </div>
-                    <button onClick={loadPartners} className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors pb-1">
+                    <button onClick={loadPartners} className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-gray-700 hover:text-white transition-colors pb-1">
                         <RefreshCcw size={10} className={loading ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </header>
 
-            <div className="max-w-6xl mx-auto px-6 md:px-12">
-              {/* BARRA DE FILTROS UNIFICADA Y COMPACTA */}
+            {/* BARRA DE FILTROS UNIFICADA Y COMPACTA */}
             <div className="flex flex-col md:flex-row gap-2 mb-10">
                 <div className="flex-1 relative group">
                     <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-gold-400 transition-colors" />
@@ -95,7 +94,7 @@ export const Partners: React.FC = () => {
                         placeholder="BUSCAR..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3.5 bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-none text-[9px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-black dark:text-white transition-all"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white/[0.03] border border-white/5 rounded-none text-[9px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-white transition-all"
                     />
                 </div>
 
@@ -104,11 +103,11 @@ export const Partners: React.FC = () => {
                         <select 
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="w-full pl-4 pr-8 py-3.5 bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-none text-[8px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-gray-500 appearance-none cursor-pointer hover:bg-black/[0.05] dark:bg-white/[0.05] transition-all"
+                            className="w-full pl-4 pr-8 py-3.5 bg-white/[0.03] border border-white/5 rounded-none text-[8px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-gray-500 appearance-none cursor-pointer hover:bg-white/[0.05] transition-all"
                         >
                             <option value="Todos">CATEGORÍA</option>
                             {CATEGORIES.filter(c => c !== "Todos").map(cat => (
-                                <option key={cat} value={cat} className="bg-white dark:bg-black text-black dark:text-white">{cat.toUpperCase()}</option>
+                                <option key={cat} value={cat} className="bg-black text-white">{cat.toUpperCase()}</option>
                             ))}
                         </select>
                         <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" />
@@ -118,11 +117,11 @@ export const Partners: React.FC = () => {
                         <select 
                             value={selectedProvince}
                             onChange={(e) => setSelectedProvince(e.target.value)}
-                            className="w-full pl-4 pr-8 py-3.5 bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-none text-[8px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-gray-500 appearance-none cursor-pointer hover:bg-black/[0.05] dark:bg-white/[0.05] transition-all"
+                            className="w-full pl-4 pr-8 py-3.5 bg-white/[0.03] border border-white/5 rounded-none text-[8px] font-black uppercase tracking-widest focus:border-gold-400/40 outline-none text-gray-500 appearance-none cursor-pointer hover:bg-white/[0.05] transition-all"
                         >
                             <option value="Todas">UBICACIÓN</option>
                             {PROVINCES.filter(p => p !== "Todas").map(p => (
-                                <option key={p} value={p} className="bg-white dark:bg-black text-black dark:text-white">{p.toUpperCase()}</option>
+                                <option key={p} value={p} className="bg-black text-white">{p.toUpperCase()}</option>
                             ))}
                         </select>
                         <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" />
@@ -133,12 +132,12 @@ export const Partners: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {loading ? (
                     Array(9).fill(0).map((_, i) => (
-                        <div key={i} className="p-5 bg-white/[0.01] border border-black/5 dark:border-white/5 h-32 animate-pulse rounded-none flex gap-4">
-                            <div className="w-20 h-20 bg-black/5 dark:bg-white/5 rounded-none shrink-0"></div>
+                        <div key={i} className="p-5 bg-white/[0.01] border border-white/5 h-32 animate-pulse rounded-none flex gap-4">
+                            <div className="w-20 h-20 bg-white/5 rounded-none shrink-0"></div>
                             <div className="flex-1 space-y-3 pt-2">
-                                <div className="h-2 w-1/3 bg-black/5 dark:bg-white/5"></div>
-                                <div className="h-3 w-full bg-black/5 dark:bg-white/5"></div>
-                                <div className="h-2 w-1/2 bg-black/5 dark:bg-white/5"></div>
+                                <div className="h-2 w-1/3 bg-white/5"></div>
+                                <div className="h-3 w-full bg-white/5"></div>
+                                <div className="h-2 w-1/2 bg-white/5"></div>
                             </div>
                         </div>
                     ))
@@ -146,12 +145,12 @@ export const Partners: React.FC = () => {
                     <div className="col-span-full py-20 text-center border border-red-500/10 bg-red-500/[0.02]">
                         <AlertCircle size={32} className="mx-auto mb-4 text-red-500" />
                         <p className="text-red-500 font-black uppercase text-[9px] tracking-widest mb-6">Fallo de conexión</p>
-                        <button onClick={loadPartners} className="mx-auto px-8 py-3 bg-black dark:bg-white text-white dark:text-black text-[8px] font-black uppercase tracking-widest hover:bg-gold-400 transition-all flex items-center gap-2">
+                        <button onClick={loadPartners} className="mx-auto px-8 py-3 bg-white text-black text-[8px] font-black uppercase tracking-widest hover:bg-gold-400 transition-all flex items-center gap-2">
                             <RefreshCcw size={12} /> REINTENTAR
                         </button>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="col-span-full py-32 text-center border border-dashed border-black/5 dark:border-white/5">
+                    <div className="col-span-full py-32 text-center border border-dashed border-white/5">
                         <Store size={32} className="mx-auto mb-4 text-gray-900" />
                         <p className="text-gray-700 font-black uppercase text-[8px] tracking-[0.5em]">Sin resultados</p>
                     </div>
@@ -160,12 +159,12 @@ export const Partners: React.FC = () => {
                         <div 
                           key={partner.id} 
                           onClick={() => navigate(`/partner/${partner.id}`)}
-                          className="group p-5 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 hover:border-gold-400/40 transition-all cursor-pointer relative overflow-hidden shadow-xl rounded-none flex flex-col justify-between min-h-[160px]"
+                          className="group p-5 bg-white/[0.02] border border-white/5 hover:border-gold-400/40 transition-all cursor-pointer relative overflow-hidden shadow-xl rounded-none flex flex-col justify-between min-h-[160px]"
                         >
                             <div className="absolute inset-0 bg-gold-400/[0.01] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             
                             <div className="flex gap-5 relative z-10">
-                                <div className="w-20 h-20 bg-white dark:bg-black border border-black/10 dark:border-white/10 p-1 shrink-0 overflow-hidden group-hover:border-gold-400/40 transition-colors">
+                                <div className="w-20 h-20 bg-black border border-white/10 p-1 shrink-0 overflow-hidden group-hover:border-gold-400/40 transition-colors">
                                     <img 
                                         src={getProductImage(partner.logo_url)} 
                                         className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" 
@@ -181,7 +180,7 @@ export const Partners: React.FC = () => {
                                     <p className="text-[6px] font-black uppercase tracking-[0.4em] text-gold-400/60 mb-1 truncate">
                                         {partner.categoria || 'ALIADO RED'}
                                     </p>
-                                    <h3 className="font-heading text-sm text-black dark:text-white group-hover:text-gold-metallic transition-all uppercase tracking-tight leading-tight mb-3 line-clamp-2">
+                                    <h3 className="font-heading text-sm text-white group-hover:text-gold-metallic transition-all uppercase tracking-tight leading-tight mb-3 line-clamp-2">
                                         {partner.nombre_negocio}
                                     </h3>
                                     <div className="flex items-center gap-1.5 text-[7px] text-gray-700 font-black uppercase tracking-widest">
@@ -191,19 +190,18 @@ export const Partners: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-4 flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/5 relative z-10">
+                            <div className="mt-4 flex items-center justify-between pt-4 border-t border-white/5 relative z-10">
                                 <div className="flex items-center gap-2 text-gold-400/20 group-hover:text-gold-400/40 transition-colors">
                                     <Zap size={12} />
                                     <span className="text-[7px] font-black uppercase tracking-widest italic">Benefit</span>
                                 </div>
-                                <div className="bg-gold-400 text-black px-3 py-1 text-[9px] font-black tracking-tight group-hover:bg-black dark:hover:bg-white transition-colors">
+                                <div className="bg-gold-400 text-black px-3 py-1 text-[9px] font-black tracking-tight group-hover:bg-white transition-colors">
                                     -{partner.porcentaje_oferta}%
                                 </div>
                             </div>
                         </div>
                     ))
                 )}
-            </div>
             </div>
         </div>
     </div>

@@ -32,7 +32,7 @@ export const PendingApproval: React.FC = () => {
 
                 <h1 className="text-3xl font-heading font-bold uppercase mb-4 tracking-tighter">Solicitud en <br/><span className="text-gold-400">Revisión</span></h1>
                 <p className="text-gray-500 text-xs uppercase tracking-[0.2em] leading-loose mb-10">
-                    Tu solicitud ha sido enviada al Panel de Control. Un administrador verificará tu local en breve. 
+                    Tu solicitud ha sido enviada al Panel Maestro. Un administrador verificará tu local en breve. 
                     <br/><br/>
                     Recibirás una notificación cuando tu acceso esté habilitado.
                 </p>

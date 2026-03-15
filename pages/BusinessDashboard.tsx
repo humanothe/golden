@@ -10,8 +10,8 @@ import { Business, Order } from '../types';
 
 export const BusinessDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [business, setBusiness] = useState<any | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadBizData = async () => {

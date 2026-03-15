@@ -63,75 +63,35 @@ export const WaitingApprovalScreen: React.FC = () => {
 
     checkReadyProducts();
 
-    // MONITOR DE ESTADO REAL-TIME + POLLING FALLBACK (Doble Capa de Seguridad)
-    const checkStatus = async () => {
-      if (isFinished.current || !scanId) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('solicitudes_escaneo')
-          .select('estado, mensaje_sistema')
-          .eq('id', scanId)
-          .maybeSingle();
-
-        if (error || !data) return;
-
-        const nextState = data.estado?.toLowerCase();
-        if (nextState === 'aprobado' || nextState === 'approved') {
-          isFinished.current = true;
-          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          navigate(`/benefits/${scanId}`, { replace: true });
-        } else if (nextState === 'rechazado' || nextState === 'rejected' || nextState === 'cancelado') {
-          isFinished.current = true;
-          setRejectionMessage(data.mensaje_sistema || "SOLICITUD DENEGADA POR EL ESTABLECIMIENTO.");
-          setStatus('rejected');
-          setTimeout(() => handleReturn(), 4000);
-        }
-      } catch (e) {
-        console.warn("POLLING_ERROR", e);
-      }
-    };
-
-    const pollInterval = setInterval(checkStatus, 3000);
-
+    // MONITOR DE ESTADO REAL-TIME
     const channel = supabase
       .channel(`scan-gate-${scanId}`)
       .on('postgres_changes', {
-        event: '*', // Escuchar todos los eventos para máxima sensibilidad
+        event: 'UPDATE',
         schema: 'public',
         table: 'solicitudes_escaneo',
         filter: `id=eq.${scanId}`
       }, (payload) => {
-        if (!payload.new || isFinished.current) return;
-        
-        const nextState = (payload.new as any).estado?.toLowerCase();
+        const nextState = payload.new.estado?.toLowerCase();
         
         if (nextState === 'aprobado' || nextState === 'approved') {
           isFinished.current = true;
           if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
           navigate(`/benefits/${scanId}`, { replace: true });
         } 
-        else if (nextState === 'rechazado' || nextState === 'rejected' || nextState === 'cancelado') {
-          isFinished.current = true;
-          setRejectionMessage((payload.new as any).mensaje_sistema || "SOLICITUD DENEGADA POR EL ESTABLECIMIENTO.");
+        else if (nextState === 'rechazado' || nextState === 'rejected') {
+          setRejectionMessage(payload.new.mensaje_sistema || "SOLICITUD DENEGADA POR EL ESTABLECIMIENTO.");
           setStatus('rejected');
-          
-          // Redirección automática tras 4 segundos
-          setTimeout(() => {
-            handleReturn();
-          }, 4000);
         }
       })
       .subscribe();
 
     return () => {
-      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [scanId, navigate, user?.email, dueñoEmail]);
 
   const handleReturn = async () => {
-    isFinished.current = true;
     await refreshProfile();
     setActiveScan(null);
     navigate('/dashboard', { replace: true });
@@ -142,21 +102,12 @@ export const WaitingApprovalScreen: React.FC = () => {
     setIsCancelling(true);
 
     try {
-      // En lugar de borrar, marcamos como cancelado para que el operador vea el cambio en su panel
-      await supabase
-        .from('solicitudes_escaneo')
-        .update({ 
-          estado: 'cancelado', 
-          mensaje_sistema: 'SOLICITUD CANCELADA POR EL SOCIO.' 
-        })
-        .eq('id', scanId);
-
+      await supabase.from('solicitudes_escaneo').delete().eq('id', scanId);
       isFinished.current = true;
       setActiveScan(null);
       await refreshProfile();
       navigate('/dashboard', { replace: true });
     } catch (e) {
-      console.error("CANCEL_ERROR", e);
       setIsCancelling(false);
     }
   };
@@ -205,16 +156,9 @@ export const WaitingApprovalScreen: React.FC = () => {
           <div className="w-20 h-20 rounded-full border border-red-500/20 flex items-center justify-center bg-red-500/5 mb-10">
              <X size={40} className="text-red-500" strokeWidth={3} />
           </div>
-          <h2 className="text-3xl font-heading font-black uppercase text-white tracking-tighter leading-none mb-10">
-            {rejectionMessage?.includes('CANCEL') ? 'Solicitud' : 'Acceso'} <br/>
-            <span className="text-red-500">{rejectionMessage?.includes('CANCEL') ? 'Cancelada' : 'Denegado'}</span>
-          </h2>
-          <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold mb-8 italic text-center max-w-[280px]">"{rejectionMessage}"</p>
-          
-          <div className="w-full space-y-8">
-            <button onClick={handleReturn} className="w-full py-6 bg-white text-black font-black uppercase text-[10px] tracking-[0.4em] active:scale-95 transition-all">REGRESAR AL INICIO</button>
-            <p className="text-[8px] text-gray-600 uppercase tracking-[0.4em] animate-pulse">Redirigiendo automáticamente...</p>
-          </div>
+          <h2 className="text-3xl font-heading font-black uppercase text-white tracking-tighter leading-none mb-10">Acceso <br/><span className="text-red-500">Denegado</span></h2>
+          <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold mb-16 italic text-center max-w-[280px]">"{rejectionMessage}"</p>
+          <button onClick={handleReturn} className="w-full py-6 bg-white text-black font-black uppercase text-[10px] tracking-[0.4em] active:scale-95 transition-all">REGRESAR AL INICIO</button>
         </div>
       )}
 

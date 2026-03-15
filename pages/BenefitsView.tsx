@@ -69,13 +69,12 @@ export const BenefitsView: React.FC = () => {
         await supabase.from('solicitudes_escaneo').update({ nueva_consulta: true }).eq('id', scanId);
         const { data: scanInfo } = await supabase
           .from('solicitudes_escaneo')
-          .select('*')
+          .select('dueño_email')
           .eq('id', scanId)
           .maybeSingle();
 
-        const ownerEmail = (scanInfo as any)?.dueño_email;
-        if (ownerEmail) {
-          checkVaultInventory(ownerEmail);
+        if (scanInfo?.dueño_email) {
+          checkVaultInventory(scanInfo.dueño_email);
         }
       }
 
@@ -137,159 +136,134 @@ export const BenefitsView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white relative font-heading overflow-hidden flex flex-col">
-      {/* ATMÓSFERA LUMÍNICA GLOBAL - REFINADA */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-[10%] -right-[10%] w-[80%] h-[80%] opacity-20"
-               style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)', filter: 'blur(140px)' }}></div>
-          <div className="absolute -bottom-[20%] -left-[10%] w-[90%] h-[90%] opacity-[0.05]"
-               style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)', filter: 'blur(150px)' }}></div>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-      </div>
+    <div className="min-h-screen bg-black text-white p-6 md:p-12 pb-32 font-sans text-left animate-fade-in relative">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+      
+      <header className="max-w-xl mx-auto flex items-center gap-6 mb-8 relative z-10">
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          className="p-4 bg-white/5 border border-white/10 rounded-none text-gold-400 hover:bg-gold-400 hover:text-black transition-all"
+        >
+          <ArrowLeft size={24} />
+        </button>
+        <div>
+          <p className="text-[10px] text-gold-400 font-black uppercase tracking-[0.5em] mb-1">Certificación de Ahorro</p>
+          <h1 className="text-3xl font-heading font-bold uppercase tracking-tighter">
+            BENEFICIO <span className="text-gold-metallic">CONFIRMADO</span>
+          </h1>
+        </div>
+      </header>
 
-      <div className="relative z-10 flex-1 flex flex-col overflow-y-auto no-scrollbar pb-32">
-        <header className="pt-[env(safe-area-inset-top)] px-6 md:px-12 border-b border-white/10 sticky top-0 z-40 bg-black mb-12">
-          <div className="max-w-[1400px] w-full mx-auto pb-6 pt-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-12">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 opacity-40">
-                <div className="w-10 h-[1px] bg-gold-400"></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.8em] text-white">CERTIFICACIÓN_DE_AHORRO</span>
-              </div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-[0.8] text-white">
-                BENEFICIO <br/> <span className="text-gold-400">CONFIRMADO</span>
-              </h1>
+      <div className="max-w-xl mx-auto relative z-10 space-y-6">
+        
+        {readyProduct && !loading && (
+          <div className="px-6 py-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-4 animate-pulse shadow-[0_0_40px_rgba(34,197,94,0.15)] border-l-4 border-l-green-500">
+            <PackageCheck size={24} className="text-green-500 shrink-0" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-green-500 leading-relaxed">
+              🟢 Tienes <span className="underline decoration-2 font-bold">{readyProduct}</span> listo para retiro en este local.
+            </p>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="py-24 flex flex-col items-center gap-6 bg-white/[0.02] border border-white/5 rounded-3xl">
+            <div className="relative">
+                <Loader2 size={40} className="text-gold-400 animate-spin" />
+                <Zap size={16} className="absolute inset-0 m-auto text-gold-400 animate-pulse" />
             </div>
-            
-            <button 
-              onClick={() => navigate('/dashboard')} 
-              className="group flex items-center gap-4 px-8 py-4 bg-white/[0.03] border border-white/10 rounded-full hover:bg-gold-400 hover:text-black transition-all active:scale-95 text-white"
-            >
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">VOLVER_AL_PANEL</span>
+            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-gray-500 animate-pulse">Esperando que el local confirme tu beneficio...</p>
+          </div>
+        ) : networkError ? (
+          <div className="py-24 text-center border border-red-500/10 bg-red-500/[0.02] p-10 rounded-3xl">
+             <WifiOff size={48} className="mx-auto mb-6 text-red-500" />
+             <h3 className="text-sm font-black uppercase tracking-widest text-red-500 mb-4">Problema de conexión</h3>
+             <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-loose mb-10">El Nodo Maestro no responde. Verifica tu internet y reintenta la sincronización manual.</p>
+             <button onClick={handleManualRetry} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all shadow-2xl">REINTENTAR SINCRONIZACIÓN</button>
+          </div>
+        ) : !summary ? (
+          <div className="py-24 text-center border border-dashed border-white/10 opacity-30">
+            <Receipt size={48} className="mx-auto mb-6 text-gray-600" />
+            <p className="text-[10px] font-black uppercase tracking-widest px-10">Buscando ticket en Libro Mayor...</p>
+            <button onClick={() => window.location.reload()} className="mt-8 text-gold-400 text-[9px] font-black underline uppercase tracking-widest flex items-center gap-2 mx-auto">
+               <RefreshCw size={12} /> RE-INTENTAR LECTURA
             </button>
           </div>
-        </header>
+        ) : (
+          <div className="space-y-6 animate-enter-screen">
+            {/* TICKET DE AHORRO MAESTRO */}
+            <div className="bg-[#080808] border border-white/10 p-10 relative overflow-hidden shadow-2xl rounded-none">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
+                   <TrendingUp size={120} />
+                </div>
+                
+                <div className="flex justify-between items-start mb-12 border-b border-white/5 pb-8">
+                   <div className="p-4 bg-gold-400/10 border border-gold-400/20 rounded-none text-gold-400">
+                      <Zap size={24} fill="currentColor" />
+                   </div>
+                   <div className="text-right">
+                      <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest">ID_OPERACIÓN</p>
+                      <p className="text-[11px] font-mono text-white/40 uppercase">{new Date(summary.created_at).getTime().toString(36).toUpperCase()}</p>
+                   </div>
+                </div>
 
-        <div className="max-w-[800px] w-full mx-auto px-6 md:px-12 space-y-8">
-          
-          {readyProduct && !loading && (
-            <div className="px-8 py-6 bg-green-500/10 border border-green-500/20 rounded-[2rem] flex items-center gap-6 animate-pulse shadow-[0_0_50px_rgba(34,197,94,0.1)] border-l-4 border-l-green-500">
-              <PackageCheck size={28} className="text-green-500 shrink-0" />
-              <p className="text-[11px] font-black uppercase tracking-widest text-green-500 leading-relaxed">
-                🟢 Tienes <span className="underline decoration-2 font-bold">{readyProduct}</span> listo para retiro en este local.
-              </p>
+                <div className="space-y-10">
+                   <div>
+                      <p className="text-[9px] text-gold-400 font-black uppercase tracking-[0.6em] mb-3">ESTABLECIMIENTO</p>
+                      <h3 className="text-4xl font-heading font-black text-white uppercase tracking-tighter leading-none">{summary.nombre_negocio}</h3>
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-8 py-8 border-y border-white/5">
+                      <div>
+                         <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest mb-2">Total Facturado</p>
+                         <p className="text-xl font-mono font-bold text-white/50">RD$ {summary.monto_factura_bruto.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest mb-2">Protocolo</p>
+                         <div className="flex items-center justify-end gap-2 text-white">
+                            {summary.metodo_retiro === 'boveda' ? <Wallet size={14} className="text-gold-400"/> : <Banknote size={14} className="text-green-500"/>}
+                            <p className="text-sm font-bold uppercase tracking-widest">{summary.metodo_retiro}</p>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="bg-green-500/[0.03] border border-green-500/20 p-8 text-center relative">
+                      <p className="text-[10px] text-green-500 font-black uppercase tracking-[0.8em] mb-4 relative z-10">AHORRO TOTAL</p>
+                      <div className="flex items-baseline justify-center gap-2 relative z-10">
+                        <span className="text-7xl font-heading font-black text-green-400 tracking-tighter">
+                          {summary.ahorro_socio_neto.toLocaleString()}
+                        </span>
+                        <span className="text-2xl font-heading font-black text-green-400/40">GP</span>
+                      </div>
+                   </div>
+                </div>
             </div>
-          )}
 
-          {loading ? (
-            <div className="py-40 flex flex-col items-center gap-10 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-[3rem] backdrop-blur-xl">
-              <div className="relative">
-                  <div className="w-24 h-24 border-2 border-gold-400/10 rounded-full flex items-center justify-center">
-                    <Loader2 size={48} className="text-gold-400 animate-spin" strokeWidth={1.5} />
+            <div className="p-8 bg-white/[0.02] border border-white/5 flex items-center justify-between">
+               <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 bg-gold-400 animate-pulse"></div>
+                  <div>
+                    <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest mb-1">NUEVO_SALDO_DISPONIBLE</p>
+                    <p className="text-2xl font-mono font-black text-white">RD$ {user?.vault_balance.toLocaleString()}</p>
                   </div>
-                  <Zap size={20} className="absolute inset-0 m-auto text-gold-400 animate-pulse" />
-              </div>
-              <div className="text-center space-y-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.8em] text-gray-600 animate-pulse ml-[0.8em]">SINCRONIZANDO</p>
-                <p className="text-[9px] text-black/20 dark:text-white/20 uppercase tracking-widest">Consultando Libro Mayor de Transacciones...</p>
-              </div>
+               </div>
+               <ShieldCheck size={32} className="text-white/5" />
             </div>
-          ) : networkError ? (
-            <div className="py-32 text-center border border-red-500/10 bg-red-500/[0.02] p-12 rounded-[3rem] backdrop-blur-xl">
-               <WifiOff size={56} className="mx-auto mb-8 text-red-500" strokeWidth={1.5} />
-               <h3 className="text-xl font-black uppercase tracking-[0.4em] text-red-500 mb-6">Error de Enlace</h3>
-               <p className="text-[11px] text-gray-500 uppercase tracking-widest leading-loose mb-12 max-w-sm mx-auto">El Servidor Central no responde. Verifica tu internet y reintenta la sincronización manual.</p>
-               <button onClick={handleManualRetry} className="w-full py-8 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-[12px] tracking-[0.6em] active:scale-95 transition-all shadow-2xl rounded-2xl">REINTENTAR_CONEXIÓN</button>
-            </div>
-          ) : !summary ? (
-            <div className="py-40 text-center border border-dashed border-black/10 dark:border-white/10 rounded-[3rem] opacity-40">
-              <Receipt size={64} className="mx-auto mb-8 text-gray-700" strokeWidth={1} />
-              <p className="text-[11px] font-black uppercase tracking-[0.6em] px-10 text-gray-500 ml-[0.6em]">BUSCANDO_REGISTRO</p>
-              <button onClick={() => window.location.reload()} className="mt-12 text-gold-400 text-[11px] font-black underline uppercase tracking-[0.6em] flex items-center gap-4 mx-auto hover:text-black dark:hover:text-white transition-colors">
-                 <RefreshCw size={16} /> RE-INTENTAR_LECTURA
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-10 animate-enter-screen">
-              {/* TICKET DE AHORRO MAESTRO - REDISEÑADO PARA MÓVIL */}
-              <div className="bg-black/[0.02] dark:bg-white/[0.02] border border-black/10 dark:border-white/10 p-8 md:p-16 relative overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.5)] rounded-[2.5rem] md:rounded-[3rem] backdrop-blur-3xl">
-                  <div className="absolute -top-20 -right-20 p-8 opacity-[0.02] pointer-events-none">
-                     <TrendingUp size={400} />
-                  </div>
-                  
-                  <div className="flex justify-between items-center mb-12 md:mb-20 border-b border-black/5 dark:border-white/5 pb-8 md:pb-12">
-                     <div className="w-12 h-12 md:w-16 md:h-16 bg-gold-400/10 border border-gold-400/20 rounded-xl md:rounded-2xl flex items-center justify-center text-gold-400 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
-                        <Zap size={24} className="md:size-7" fill="currentColor" />
-                     </div>
-                     <div className="text-right">
-                        <p className="text-[8px] md:text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-1 md:mb-2">ID_OPERACIÓN</p>
-                        <p className="text-[11px] md:text-[14px] font-mono text-black/60 dark:text-white/60 font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase">{new Date(summary.created_at).getTime().toString(36).toUpperCase()}</p>
-                     </div>
-                  </div>
 
-                  <div className="space-y-12 md:space-y-16">
-                     <div>
-                        <p className="text-[10px] md:text-[11px] text-gold-400 font-black uppercase tracking-[0.8em] md:tracking-[1em] mb-4 md:mb-6 opacity-70 ml-[0.8em] md:ml-[1em]">ESTABLECIMIENTO</p>
-                        <h3 className="text-4xl md:text-8xl font-black text-black dark:text-white uppercase tracking-tighter leading-[0.9] break-words">{summary.nombre_negocio}</h3>
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 py-8 md:py-12 border-y border-black/5 dark:border-white/5">
-                        <div className="space-y-2 md:space-y-4">
-                           <p className="text-[9px] md:text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] md:tracking-[0.6em]">TOTAL_FACTURADO</p>
-                           <p className="text-2xl md:text-4xl font-mono font-black text-white/80 tracking-tighter">RD$ {summary.monto_factura_bruto.toLocaleString()}</p>
-                        </div>
-                        <div className="md:text-right space-y-2 md:space-y-4">
-                           <p className="text-[9px] md:text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] md:tracking-[0.6em]">PROTOCOLO_DE_RETIRO</p>
-                           <div className="flex items-center md:justify-end gap-3 md:gap-4 text-black dark:text-white">
-                              {summary.metodo_retiro === 'boveda' ? <Wallet size={20} className="md:size-6 text-gold-400"/> : <Banknote size={20} className="md:size-6 text-green-500"/>}
-                              <p className="text-sm md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">{summary.metodo_retiro === 'boveda' ? 'BÓVEDA' : 'DESCUENTO'}</p>
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="bg-green-500/[0.03] border border-green-500/20 p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] text-center relative group overflow-hidden">
-                        <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                        <p className="text-[10px] md:text-[12px] text-green-500 font-black uppercase tracking-[1em] md:tracking-[1.2em] mb-6 md:mb-8 relative z-10 ml-[1em] md:ml-[1.2em]">AHORRO_NETO_CONFIRMADO</p>
-                        <div className="flex items-baseline justify-center gap-2 md:gap-4 relative z-10">
-                          <span className="text-6xl md:text-9xl font-black text-green-400 tracking-tighter leading-none">
-                            {summary.ahorro_socio_neto.toLocaleString()}
-                          </span>
-                          <span className="text-xl md:text-3xl font-black text-green-400/30">GP</span>
-                        </div>
-                     </div>
-                  </div>
-              </div>
-
-              <div className="p-8 md:p-10 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-[2rem] md:rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 backdrop-blur-xl">
-                 <div className="flex items-center gap-4 md:gap-6">
-                    <div className="w-2 md:w-3 h-2 md:h-3 bg-gold-400 rounded-full animate-pulse shadow-[0_0_20px_rgba(212,175,55,0.5)]"></div>
-                    <div>
-                      <p className="text-[9px] md:text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-1 md:mb-2">NUEVO_SALDO_PATRIMONIAL</p>
-                      <p className="text-2xl md:text-4xl font-mono font-black text-black dark:text-white tracking-tighter">RD$ {user?.vault_balance.toLocaleString()}</p>
-                    </div>
-                 </div>
-                 <ShieldCheck size={40} className="text-white/5 hidden md:block" strokeWidth={1} />
-              </div>
-
-              <button 
-                onClick={() => navigate('/dashboard')}
-                className="w-full py-8 md:py-10 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-[12px] md:text-[14px] tracking-[0.6em] md:tracking-[0.8em] hover:bg-gold-400 transition-all active:scale-[0.98] shadow-[0_20px_80px_rgba(255,255,255,0.1)] flex items-center justify-center gap-4 md:gap-6 rounded-2xl md:rounded-3xl"
-              >
-                FINALIZAR_CICLO <ChevronRight size={20} className="md:size-6" />
-              </button>
-            </div>
-          )}
-
-          <div className="pt-24 pb-12 flex flex-col items-center gap-10 opacity-30">
-             <div className="flex items-center gap-8 w-full">
-                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-gray-800"></div>
-                <span className="text-[9px] font-black uppercase tracking-[0.8em] text-gray-600 italic text-center leading-loose ml-[0.8em]">
-                  PROTOCOLO_DE_AUDITORÍA_GOLDEN_ACCESO_V8.5<br/>
-                  CIFRADO_POR_SERVIDOR_CENTRAL_GP
-                </span>
-                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-gray-800"></div>
-             </div>
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="w-full py-7 bg-white text-black font-black uppercase text-[11px] tracking-[0.5em] hover:bg-gold-400 transition-all active:scale-95 shadow-2xl flex items-center justify-center gap-4"
+            >
+              FINALIZAR CICLO <ChevronRight size={18} />
+            </button>
           </div>
+        )}
+
+        <div className="pt-12 flex flex-col items-center gap-6 opacity-20">
+           <div className="flex items-center gap-4">
+              <div className="h-[1px] w-12 bg-gray-600"></div>
+              <span className="text-[7px] font-black uppercase tracking-[0.8em] text-gray-500 italic text-center">Protocolo de Auditoría Golden Acceso v8.5<br/>Cifrado por Nodo Maestro</span>
+              <div className="h-[1px] w-12 bg-gray-600"></div>
+           </div>
         </div>
       </div>
     </div>
