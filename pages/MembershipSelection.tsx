@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabaseClient';
 import { 
   Loader2, AlertCircle, Crown, ShieldCheck, 
-  RefreshCw, ArrowLeft, Shield, Check, Wallet
+  RefreshCw, ArrowLeft, Shield, Check, Wallet, Zap, Star, ShieldAlert
 } from 'lucide-react';
+import { MEMBERSHIP_PLANS } from '../constants/plans';
 
 export const MembershipSelection: React.FC = () => {
   const { user, refreshProfile } = useAuth();
@@ -38,7 +39,6 @@ export const MembershipSelection: React.FC = () => {
       
       const [plansRes, profRes, balanceRes] = await Promise.all([
         supabase.from('membership_plans').select('id, name, price_monthly, benefits, limite').order('price_monthly', { ascending: true }),
-        // SELECCIÓN EXPLÍCITA: Sin projected_savings ni user_id
         supabase.from('perfiles')
           .select('id, membership_tier, membership_start_date, membership_expiry_date')
           .eq('id', user?.id)
@@ -49,7 +49,18 @@ export const MembershipSelection: React.FC = () => {
           .neq('socio_email', 'golden@gmail.com')
       ]);
 
-      setPlans(plansRes.data || []);
+      const mergedPlans = (plansRes.data || []).map(dbPlan => {
+        const def = MEMBERSHIP_PLANS.find(p => p.name.toLowerCase() === dbPlan.name.toLowerCase());
+        return {
+          ...dbPlan,
+          description: def?.description || '',
+          benefits: def?.benefits || dbPlan.benefits,
+          possibilities: def?.possibilities || [],
+          limit: def?.limit || dbPlan.limite
+        };
+      });
+
+      setPlans(mergedPlans);
       setProfileData(profRes.data);
       
       const total = balanceRes.data?.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0) || 0;
@@ -67,10 +78,10 @@ export const MembershipSelection: React.FC = () => {
   }, [syncData, user]);
 
   const currentTierLimit = useMemo(() => {
-    if (!plans.length || !profileData?.membership_tier) return '---';
-    const planMatch = plans.find(p => p.name.toLowerCase() === profileData.membership_tier.toLowerCase());
-    return planMatch?.limite || '1';
-  }, [plans, profileData]);
+    if (!profileData?.membership_tier) return '---';
+    const planMatch = MEMBERSHIP_PLANS.find(p => p.name.toLowerCase() === profileData.membership_tier.toLowerCase());
+    return planMatch?.limit || '1';
+  }, [profileData]);
 
   const handleSelectPlan = (plan: any) => {
     setSelectedPlan(plan);
@@ -177,26 +188,59 @@ export const MembershipSelection: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-enter-screen">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-enter-screen">
               {plans.map((plan) => (
-                <div key={plan.id} className="p-8 md:p-10 border border-white/10 hover:border-gold-400/40 transition-all group flex flex-col justify-between relative overflow-hidden bg-white/[0.01]">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05]"><Shield size={60} /></div>
-                  <div>
-                    <h3 className="text-xl font-heading font-black uppercase text-white mb-2 tracking-tight">PLAN {plan.name}</h3>
-                    <div className="flex items-baseline gap-2 mb-8">
-                      <span className="text-4xl font-heading font-black text-white">{plan.price_monthly}</span>
-                      <span className="text-[9px] text-gray-600 font-black tracking-widest uppercase">Puntos / Mes</span>
-                    </div>
-                    <div className="space-y-4 mb-12">
-                       {plan.benefits?.slice(0, 4).map((b: string, i: number) => (
-                         <div key={i} className="flex items-start gap-3">
-                           <Check size={10} className="text-gold-400 mt-1" />
-                           <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500 leading-tight">{b}</span>
-                         </div>
-                       ))}
-                    </div>
+                <div key={plan.id} className="group relative flex flex-col bg-[#0A0A0A] border border-white/5 hover:border-gold-400/40 transition-all duration-500 overflow-hidden">
+                  {/* Background Accents */}
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                    {plan.name === 'Bronce' && <Shield size={120} />}
+                    {plan.name === 'Plata' && <Zap size={120} />}
+                    {plan.name === 'Oro' && <Crown size={120} />}
                   </div>
-                  <button onClick={() => handleSelectPlan(plan)} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-widest hover:bg-gold-400 transition-all active:scale-[0.98]">ADQUIRIR</button>
+
+                  <div className="p-8 md:p-10 flex-1 flex flex-col">
+                    <div className="mb-8">
+                      <p className="text-[8px] text-gold-400 font-black uppercase tracking-[0.5em] mb-3">NIVEL_SISTEMA</p>
+                      <h3 className="text-3xl font-heading font-black uppercase text-white tracking-tighter mb-2">{plan.name}</h3>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed min-h-[40px]">
+                        {plan.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-baseline gap-2 mb-10 border-y border-white/5 py-6">
+                      <span className="text-5xl font-heading font-black text-white tracking-tighter">{plan.price_monthly}</span>
+                      <span className="text-[10px] text-gray-600 font-black tracking-widest uppercase">GP / MES</span>
+                    </div>
+
+                    <div className="space-y-8 mb-12 flex-1">
+                      <div className="space-y-4">
+                        <p className="text-[7px] text-gold-400 font-black uppercase tracking-widest">BENEFICIOS_EXCLUSIVOS</p>
+                        {plan.benefits.map((b, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <Check size={12} className="text-gold-400 mt-0.5 shrink-0" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/70 leading-tight">{b}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-4">
+                        <p className="text-[7px] text-blue-400 font-black uppercase tracking-widest">POSIBILIDADES_ADICIONALES</p>
+                        {plan.possibilities.map((p, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <Star size={10} className="text-blue-400 mt-0.5 shrink-0" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 leading-tight italic">{p}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => handleSelectPlan(plan)} 
+                      className="w-full py-6 bg-white text-black font-black uppercase text-[11px] tracking-[0.4em] hover:bg-gold-400 transition-all active:scale-[0.98] shadow-2xl"
+                    >
+                      ADQUIRIR_MEMBRESÍA
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

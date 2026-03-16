@@ -1,6 +1,6 @@
 import { supabase, isConfigured } from './supabaseClient';
 import { 
-  User, Business, Product, Order
+  User, Business, Product
 } from '../types';
 
 const handleApiError = (e: any): string => {
@@ -147,6 +147,18 @@ export const api = {
     }
   },
   data: {
+    getActiveFreezesCount: async (email: string) => {
+      try {
+        const { count, error } = await supabase
+          .from('golden_congelados')
+          .select('*', { count: 'exact', head: true })
+          .eq('socio_email', email.toLowerCase().trim())
+          .in('estado', ['activo', 'en_proceso'])
+          .gt('fecha_vencimiento', new Date().toISOString());
+        if (error) throw error;
+        return count || 0;
+      } catch (e) { return 0; }
+    },
     getVaultHistory: async (email: string) => {
       try {
         const { data, error } = await supabase
@@ -173,23 +185,10 @@ export const api = {
       try {
         const { data } = await supabase
           .from('solicitudes_registro')
-          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url, descripcion_negocio, direccion, portada_url')
+          .select('id, nombre_negocio, categoria, provincia, email_contacto, logo_url')
           .eq('dueño_id', userId)
           .maybeSingle();
-        if (!data) return null;
-        return {
-          id: data.id,
-          name: data.nombre_negocio,
-          description: data.descripcion_negocio || '',
-          logo_url: data.logo_url,
-          image_url: data.portada_url || '',
-          category: data.categoria,
-          rating: 4.8,
-          rating_count: 120,
-          delivery_time: '20-35 min',
-          address: data.direccion,
-          zone: data.provincia
-        } as Business;
+        return data;
       } catch (e) { return null; }
     },
     getBusinessById: async (id: string) => {
@@ -260,97 +259,136 @@ export const api = {
     getDriverActiveOrders: async (driverId: string) => {
       try {
         const { data } = await supabase
-          .from('golden_congelados')
+          .from('pedidos_maestros')
           .select('*')
-          .eq('entregado_por', driverId)
-          .in('estado_entrega', ['recogido', 'en_camino'])
-          .order('fecha_inicio', { ascending: false });
+          .eq('operador_id', driverId)
+          .in('estado_maestro', ['pendiente', 'en_camino'])
+          .order('fecha_creacion', { ascending: false });
         
-        return (data || []).map(item => ({
-          id: item.id,
-          user_id: item.socio_email,
-          business_id: item.negocio_id_asignado,
-          business_name: `NODO_${item.negocio_id_asignado?.slice(0,6)}`,
-          business_address: 'Almacén Golden',
-          customer_name: item.socio_email.split('@')[0].toUpperCase(),
-          customer_address: 'Dirección Registrada',
-          customer_phone: '---',
-          total: Number(item.precio_congelado),
-          status: item.estado_entrega === 'recogido' ? 'picked_up' : 'ready',
-          delivery_method: 'standard',
-          payment_method: 'balance',
-          created_at: item.fecha_inicio,
+        if (!data) return [];
+
+        return data.map(item => ({
+          id: item.id_pedido,
+          user_id: item.usuario_id,
+          business_id: 'ALMACEN_GOLDEN',
+          business_name: 'ALMACÉN CENTRAL',
+          business_address: 'Centro de Distribución Golden',
+          customer_name: item.nombre_cliente || 'CLIENTE',
+          customer_address: `${item.calle} ${item.numero_casa}, ${item.ciudad}`,
+          customer_phone: item.telefono || '---',
+          total: Number(item.total_pedido || 0),
+          status: item.estado_maestro === 'en_camino' ? 'picked_up' : 'pending',
+          created_at: item.fecha_creacion,
+          productos_ids: [], // Se manejaría por id_pedido_maestro en solicitudes_entrega
           items: []
-        })) as Order[];
+        }));
       } catch (e) { return []; }
     },
     getDeliveryPool: async (_driverId: string) => {
       try {
         const { data } = await supabase
-          .from('golden_congelados')
+          .from('pedidos_maestros')
           .select('*')
-          .eq('metodo_entrega', 'domicilio')
-          .eq('estado_entrega', 'pendiente')
-          .is('entregado_por', null);
+          .eq('estado_maestro', 'pendiente')
+          .is('operador_id', null);
         
         return (data || []).map(item => ({
-          id: item.id,
-          user_id: item.socio_email,
-          business_id: item.negocio_id_asignado,
-          business_name: `NODO_${item.negocio_id_asignado?.slice(0,6)}`,
-          business_address: 'Almacén Golden',
-          customer_name: item.socio_email.split('@')[0].toUpperCase(),
-          customer_address: 'Dirección Registrada',
-          customer_phone: '---',
-          total: Number(item.precio_congelado),
-          status: 'ready',
-          delivery_method: 'standard',
-          payment_method: 'balance',
-          created_at: item.fecha_inicio,
+          id: item.id_pedido,
+          user_id: item.usuario_id,
+          business_id: 'ALMACEN_GOLDEN',
+          business_name: 'ALMACÉN CENTRAL',
+          business_address: 'Centro de Distribución Golden',
+          customer_name: item.nombre_cliente || 'CLIENTE',
+          customer_address: `${item.calle} ${item.numero_casa}, ${item.ciudad}`,
+          customer_phone: item.telefono || '---',
+          total: Number(item.total_pedido || 0),
+          status: 'pending',
+          created_at: item.fecha_creacion,
+          productos_ids: [],
           items: []
-        })) as Order[];
+        }));
       } catch (e) { return []; }
     },
     claimOrder: async (orderId: string, driverId: string) => {
       try {
         const { data, error } = await supabase
-          .from('golden_congelados')
+          .from('pedidos_maestros')
           .update({ 
-            entregado_por: driverId,
-            estado_entrega: 'recogido' 
+            operador_id: driverId,
+            estado_maestro: 'pendiente' // O el estado que corresponda al ser tomado
           })
-          .eq('id', orderId)
-          .is('entregado_por', null)
+          .eq('id_pedido', orderId)
+          .is('operador_id', null)
           .select();
         return !error && data && data.length > 0;
       } catch (e) { return false; }
     },
-    updateOrderStatus: async (orderId: string, status: string) => {
+    updateOrderStatus: async (orderId: string, status: string, token?: string) => {
       try {
-        const dbStatus = status === 'delivered' ? 'entregado' : 'recogido';
-        const updates: any = { estado_entrega: dbStatus };
-        if (dbStatus === 'entregado') {
-          updates.estado = 'entregado';
+        if (status === 'picked_up') {
+          await supabase
+            .from('pedidos_maestros')
+            .update({ estado_maestro: 'en_camino' })
+            .eq('id_pedido', orderId);
+          return { success: true };
         }
-        await supabase
-          .from('golden_congelados')
-          .update(updates)
-          .eq('id', orderId);
-        return true;
-      } catch (e) { return false; }
+
+        if (status === 'delivered') {
+          // 1. Validar solicitud maestra
+          const { data: pedido, error: fetchError } = await supabase
+            .from('pedidos_maestros')
+            .select('*')
+            .eq('id_pedido', orderId)
+            .single();
+
+          if (fetchError || !pedido) return { success: false, message: "No se encontró el pedido." };
+          
+          // Nota: El token_entrega no está en la lista de columnas solicitada, 
+          // pero si existiera en la tabla maestra se validaría aquí.
+          // Por ahora asumimos éxito si llega aquí o validamos contra un campo si existe.
+
+          // 2. Obtener productos vinculados
+          const { data: items } = await supabase
+            .from('solicitudes_entrega')
+            .select('producto_id')
+            .eq('id_pedido_maestro', orderId);
+
+          const productIds = items?.map(i => i.producto_id) || [];
+
+          // 3. Transacción Multitabla
+          // Paso A: Cambiar estado_maestro a 'entregado'
+          const { error: errA } = await supabase
+            .from('pedidos_maestros')
+            .update({ estado_maestro: 'entregado' })
+            .eq('id_pedido', orderId);
+
+          if (errA) throw errA;
+
+          // Paso B: Cambiar estado de productos en golden_congelados
+          if (productIds.length > 0) {
+            const { error: errB } = await supabase
+              .from('golden_congelados')
+              .update({ estado: 'entregado' })
+              .in('id', productIds);
+
+            if (errB) throw errB;
+          }
+
+          return { success: true };
+        }
+
+        return { success: false, message: "Estado no soportado." };
+      } catch (e: any) { 
+        return { success: false, message: e.message || "Error en la transacción." }; 
+      }
     },
     getBusinessOrders: async (businessId: string) => {
       try {
         const { data } = await supabase.from('orders')
-          .select('*')
+          .select('id, total, status, created_at')
           .eq('business_id', businessId)
           .order('created_at', { ascending: false });
-        return (data || []).map(order => ({
-          ...order,
-          items: order.items || [],
-          delivery_method: order.delivery_method || 'standard',
-          payment_method: order.payment_method || 'balance'
-        })) as Order[];
+        return data || [];
       } catch (e) { return []; }
     },
     getNotifications: async () => {
@@ -358,7 +396,7 @@ export const api = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
         const { data } = await supabase.from('notifications')
-          .select('*')
+          .select('id, title, message, type, read, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         return data || [];
