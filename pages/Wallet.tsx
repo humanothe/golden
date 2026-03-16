@@ -25,6 +25,7 @@ export const Wallet: React.FC = () => {
   const [cardData, setCardData] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [recentRecharges, setRecentRecharges] = useState<any[]>([]);
 
   const isQuerying = useRef(false);
@@ -86,16 +87,20 @@ export const Wallet: React.FC = () => {
 
       const statusActual = (data.estado || '').toLowerCase();
 
-      if (statusActual === 'usada' || statusActual === 'cobrada' || data.perfil_id) {
-        setErrorMsg("OPERACIÓN DENEGADA: ESTE PIN YA FUE LIQUIDADO.");
+      if (statusActual === 'usada') {
+        setErrorMsg("Error: Esta tarjeta ya ha sido redimida anteriormente.");
         setAppStatus('error');
       } 
-      else if (statusActual === 'activada') {
+      else if (statusActual === 'activa' || statusActual === 'activada') {
         setCardData(data);
         setAppStatus('success');
       }
+      else if (statusActual === 'en_calle') {
+        setErrorMsg("Esta tarjeta aún no ha sido activada en caja. Por favor, pague en el establecimiento.");
+        setAppStatus('error');
+      }
       else {
-        setErrorMsg(`TARJETA ${statusActual.toUpperCase()}. REQUIERE ACTIVACIÓN COMERCIAL.`);
+        setErrorMsg(`TARJETA EN ESTADO ${statusActual.toUpperCase()}. REQUIERE ACTIVACIÓN COMERCIAL.`);
         setAppStatus('error');
       }
 
@@ -135,6 +140,7 @@ export const Wallet: React.FC = () => {
       }
 
       console.log("RPC SUCCESS:", rpcData);
+      setShowSuccessOverlay(true);
       setSuccessMsg("¡Recarga Exitosa! Capital liquidado en tu bóveda.");
       
       await refreshProfile(); 
@@ -146,9 +152,10 @@ export const Wallet: React.FC = () => {
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
       setTimeout(() => {
+        setShowSuccessOverlay(false);
         factoryReset();
         setTimeout(() => setSuccessMsg(null), 4000);
-      }, 1500);
+      }, 3000);
 
     } catch (err: any) {
       console.error("RPC_REJECTED_DETAILS:", err);
@@ -231,6 +238,25 @@ export const Wallet: React.FC = () => {
       </div>
       
       <div className="max-w-xl mx-auto px-6 relative z-10">
+        {showSuccessOverlay && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 animate-fade-in">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-xl"></div>
+            <div className="relative bg-[#080808] border border-gold-400/30 p-12 text-center shadow-[0_0_50px_rgba(212,175,55,0.15)] w-full max-w-sm animate-enter-screen">
+              <div className="w-24 h-24 bg-gold-400 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(212,175,55,0.4)]">
+                <Check size={48} className="text-black" />
+              </div>
+              <h3 className="font-heading text-2xl font-black text-white uppercase tracking-tighter mb-4">RECARGA EXITOSA</h3>
+              <p className="text-[10px] text-gold-400 font-black uppercase tracking-[0.4em] leading-relaxed">
+                El capital ha sido liquidado correctamente en tu bóveda maestra.
+              </p>
+              
+              <div className="mt-10 pt-10 border-t border-white/5">
+                <p className="text-[8px] text-gray-600 uppercase tracking-[0.5em] font-bold">SISTEMA GOLDEN V5.1</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <header className="pt-8 flex items-center justify-start mb-10">
             <button onClick={() => navigate('/dashboard')} className="p-4 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl active:scale-90">
                 <ArrowLeft size={24} />
